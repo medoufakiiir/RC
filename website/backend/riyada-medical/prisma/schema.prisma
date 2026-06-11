@@ -1,0 +1,230 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Riyada Medical Centre — Prisma Schema
+// Database: PostgreSQL via Supabase
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Required for Supabase connection pooling
+}
+
+// ─── ENUMS ───────────────────────────────────────────────────────────────────
+
+enum ServiceType {
+  ASSESSMENT
+  ABA
+  SPEECH
+  OT
+}
+
+enum Specialty {
+  ABA
+  SPEECH
+  OT
+  ASSESSMENT
+  MULTI // therapist covers multiple specialties
+}
+
+enum BookingStatus {
+  PENDING    // awaiting admin confirmation
+  CONFIRMED  // confirmed by admin or auto-confirmed
+  CANCELLED  // cancelled by parent or admin
+  COMPLETED  // session took place
+  NO_SHOW    // parent did not attend
+}
+
+enum PackageType {
+  INDIVIDUAL  // 350 SAR/hr, no package
+  PKG_A       // 5 hrs/week, 6650 SAR/month, 5% off
+  PKG_B       // 10 hrs/week, 12600 SAR/month, 10% off
+  PKG_C       // 15 hrs/week, 17850 SAR/month, 15% off
+  INTENSIVE   // 30 hrs/week, 29400 SAR/month, 30% off
+}
+
+enum Language {
+  AR
+  EN
+}
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+}
+
+// ─── PATIENT ─────────────────────────────────────────────────────────────────
+
+model Patient {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Child info
+  nameAr       String
+  nameEn       String?
+  dateOfBirth  DateTime
+  gender       String?         // "male" | "female"
+  condition    String?         // free-text diagnosis / notes
+  notes        String?         // additional clinical notes
+
+  // Parent / guardian info
+  parentNameAr String
+  parentNameEn String?
+  parentPhone  String          // Saudi format: +9665XXXXXXXX
+  parentEmail  String?
+  language     Language        @default(AR)
+
+  // Relations
+  bookings     Booking[]
+
+  @@index([parentPhone])
+}
+
+// ─── THERAPIST ───────────────────────────────────────────────────────────────
+
+model Therapist {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  nameAr     String
+  nameEn     String
+  titleAr    String          // e.g. "أخصائي تحليل السلوك التطبيقي"
+  titleEn    String          // e.g. "ABA Specialist"
+  specialty  Specialty
+  bioAr      String?
+  bioEn      String?
+  photoUrl   String?
+  isActive   Boolean         @default(true)
+  sortOrder  Int             @default(0)
+
+  // Relations
+  schedules  TherapistSchedule[]
+  bookings   Booking[]
+  blocks     TherapistBlock[]
+
+  @@index([specialty, isActive])
+}
+
+// ─── THERAPIST WEEKLY SCHEDULE ────────────────────────────────────────────────
+
+model TherapistSchedule {
+  id          String     @id @default(cuid())
+  therapistId String
+  therapist   Therapist  @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+
+  dayOfWeek   DayOfWeek
+  startTime   String     // "09:00" — 24h format, Riyadh local time
+  endTime     String     // "17:00"
+  isActive    Boolean    @default(true)
+
+  @@unique([therapistId, dayOfWeek])
+  @@index([therapistId])
+}
+
+// ─── THERAPIST BLOCK (individual day off) ────────────────────────────────────
+
+model TherapistBlock {
+  id          String    @id @default(cuid())
+  therapistId String?   // null = all therapists blocked
+  therapist   Therapist? @relation(fields: [therapistId], references: [id], onDelete: Cascade)
+
+  date        DateTime  @db.Date
+  reason      String?   // "National Day", "Training", "Sick Leave", etc.
+  createdAt   DateTime  @default(now())
+
+  @@index([date])
+  @@index([therapistId, date])
+}
+
+// ─── PUBLIC HOLIDAY ──────────────────────────────────────────────────────────
+
+model PublicHoliday {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  nameAr    String
+  nameEn    String
+  createdAt DateTime @default(now())
+
+  @@unique([date])
+}
+
+// ─── BOOKING ─────────────────────────────────────────────────────────────────
+
+model Booking {
+  id          String        @id @default(cuid())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  referenceNo String        @unique // e.g. "RMC-2025-0001"
+
+  // Relations
+  patientId   String
+  patient     Patient       @relation(fields: [patientId], references: [id])
+  therapistId String?       // null = any available (resolved at confirmation)
+  therapist   Therapist?    @relation(fields: [therapistId], references: [id])
+
+  // Session details
+  serviceType ServiceType
+  startTime   DateTime      // full datetime, stored as UTC, displayed in Asia/Riyadh
+  endTime     DateTime      // startTime + 60 min (configurable)
+  durationMin Int           @default(60)
+
+  // Package / billing
+  packageType PackageType   @default(INDIVIDUAL)
+  pricePerHour Decimal      @db.Decimal(10, 2) @default(350.00) // SAR
+  vatRate      Decimal      @db.Decimal(5, 4)  @default(0.15)  // 15%
+
+  // Status
+  status      BookingStatus @default(PENDING)
+  cancelledAt DateTime?
+  cancelReason String?
+  completedAt DateTime?
+
+  // Notifications
+  confirmationSentAt DateTime?
+  reminderSentAt     DateTime?
+
+  // Internal notes
+  adminNotes  String?
+
+  // Source tracking
+  bookedVia   String        @default("website") // "website" | "phone" | "admin"
+
+  @@index([patientId])
+  @@index([therapistId])
+  @@index([startTime])
+  @@index([status])
+  @@index([referenceNo])
+}
+
+// ─── ADMIN USER ──────────────────────────────────────────────────────────────
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name      String
+  email     String   @unique
+  password  String   // bcrypt hashed
+  role      String   @default("admin") // "admin" | "superadmin"
+  isActive  Boolean  @default(true)
+  lastLogin DateTime?
+
+  @@index([email])
+}
+
+// ─── BOOKING SEQUENCE (for reference number generation) ──────────────────────
+
+model BookingSequence {
+  id    Int @id @default(1)
+  value Int @default(0)
+}

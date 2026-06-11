@@ -1,0 +1,308 @@
+/* src/app/globals.css */
+/* Riyada Center — Global Styles */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── DX LACTOS FONT (personal use, bundled in /public/fonts) ─────────────── */
+@font-face {
+  font-family: 'Dx Lactos';
+  src: url('/fonts/dxlactos-regular.otf') format('opentype');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── CSS CUSTOM PROPERTIES ─────────────────────────────────────────────────
+   These mirror Tailwind config — useful for non-Tailwind contexts
+   (inline styles, SVGs, framer-motion, etc.)
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Primary */
+  --cobalt:     #3355EE;
+  --cobalt-50:  #EEF1FD;
+  --cobalt-100: #D5DCFB;
+  --cobalt-600: #1A3CD4;
+  --cobalt-900: #071241;
+
+  /* Accents */
+  --magenta:    #FF4D94;
+  --magenta-lt: #FFD6E8;
+  --malachite:  #33CC44;
+  --malachite-lt: #C8F5B5;
+  --sunflower:  #FFCC22;
+  --iris:       #7766DD;
+  --thistle:    #DDBAE8;
+  --canary:     #EEFF99;
+  --pistachio:  #C8F5B5;
+
+  /* Neutrals */
+  --ink:        #0A0F2E;
+  --ink-muted:  #5A6380;
+  --ink-light:  #E8EAEF;
+  --surface:    #F7F8FF;
+  --white:      #FFFFFF;
+
+  /* Typography */
+  --font-display: 'Dx Lactos', system-ui, sans-serif;
+  --font-body:    'Poppins', system-ui, sans-serif;
+  --font-arabic:  'Noto Kufi Arabic', system-ui, sans-serif;
+
+  /* Spacing */
+  --section-py:   100px;
+  --container-px: 80px;
+  --navbar-h:     72px;
+
+  /* Radius */
+  --radius-card:  20px;
+  --radius-pill:  999px;
+  --radius-input: 12px;
+
+  /* Shadows */
+  --shadow-card:   0 2px 12px rgba(51,85,238,0.08);
+  --shadow-hover:  0 8px 28px rgba(51,85,238,0.16);
+  --shadow-button: 0 4px 14px rgba(51,85,238,0.30);
+}
+
+/* ─── BASE STYLES ────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-surface text-ink font-body antialiased;
+    /* RTL direction set dynamically via html[dir] — do not set here */
+  }
+
+  /* Arabic RTL baseline */
+  [dir="rtl"] body,
+  [dir="rtl"] {
+    font-family: var(--font-arabic);
+    line-height: 2.0;
+  }
+
+  /* English LTR baseline */
+  [dir="ltr"] body,
+  [dir="ltr"] {
+    font-family: var(--font-body);
+    line-height: 1.65;
+  }
+
+  /* Numbers always render LTR even in Arabic context */
+  .numeric,
+  [dir="rtl"] .numeric,
+  [dir="rtl"] time,
+  [dir="rtl"] .price,
+  [dir="rtl"] .phone {
+    direction: ltr;
+    unicode-bidi: embed;
+    display: inline-block;
+  }
+
+  /* Headings use Dx Lactos */
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+
+  /* Smooth focus rings using cobalt */
+  *:focus-visible {
+    outline: 2px solid var(--cobalt);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ─── COMPONENT UTILITIES ───────────────────────────────────────────────── */
+@layer components {
+
+  /* Container */
+  .container-page {
+    @apply max-w-page mx-auto px-[var(--container-px)];
+  }
+  @media (max-width: 768px) {
+    .container-page {
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+  }
+
+  /* Section padding */
+  .section-py {
+    padding-top: var(--section-py);
+    padding-bottom: var(--section-py);
+  }
+  @media (max-width: 768px) {
+    .section-py {
+      padding-top: 64px;
+      padding-bottom: 64px;
+    }
+  }
+
+  /* Diagonal section break — adds upward/downward clip */
+  .section-diagonal-top {
+    clip-path: polygon(0 4%, 100% 0, 100% 100%, 0 100%);
+    margin-top: -2rem;
+    padding-top: calc(var(--section-py) + 2rem);
+  }
+  .section-diagonal-bottom {
+    clip-path: polygon(0 0, 100% 0, 100% 96%, 0 100%);
+    padding-bottom: calc(var(--section-py) + 2rem);
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-cobalt text-white font-body font-semibold
+           px-6 py-3 rounded-pill
+           shadow-button
+           transition-all duration-normal
+           hover:bg-cobalt-600 hover:shadow-card-hover
+           active:scale-95
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-transparent text-cobalt font-body font-semibold
+           border-2 border-cobalt
+           px-6 py-3 rounded-pill
+           transition-all duration-normal
+           hover:bg-cobalt hover:text-white
+           active:scale-95
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  /* Service card */
+  .service-card {
+    @apply bg-white rounded-card border border-ink-light
+           shadow-card hover:shadow-card-hover
+           transition-all duration-normal hover:-translate-y-1
+           overflow-hidden cursor-pointer;
+  }
+
+  /* Package card */
+  .package-card {
+    @apply bg-white rounded-card border-2 border-ink-light
+           shadow-card hover:shadow-card-hover
+           transition-all duration-normal hover:-translate-y-1
+           p-6 flex flex-col;
+  }
+  .package-card.popular {
+    @apply bg-cobalt border-cobalt text-white -translate-y-2
+           shadow-button;
+  }
+
+  /* Condition pill */
+  .condition-pill {
+    @apply inline-flex items-center gap-1.5
+           bg-white text-cobalt font-body font-medium text-body-sm
+           border-[1.5px] border-cobalt
+           px-4 py-2 rounded-pill
+           transition-colors duration-fast
+           hover:bg-cobalt hover:text-white cursor-default;
+  }
+
+  /* Status badge */
+  .badge-confirmed  { @apply bg-malachite-lt text-malachite-dark; }
+  .badge-pending    { @apply bg-sunflower text-[#7A5A00]; }
+  .badge-cancelled  { @apply bg-magenta-lt text-[#A00040]; }
+  .badge-completed  { @apply bg-thistle text-iris-dark; }
+
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-badge
+           font-body font-medium text-caption;
+  }
+
+  /* Multicolor heading — applies alternating brand colors to child spans */
+  .heading-multicolor span:nth-child(1) { color: var(--cobalt); }
+  .heading-multicolor span:nth-child(2) { color: var(--magenta); }
+  .heading-multicolor span:nth-child(3) { color: var(--malachite); }
+  .heading-multicolor span:nth-child(4) { color: var(--sunflower); }
+  .heading-multicolor span:nth-child(5) { color: var(--iris); }
+
+  /* Navbar */
+  .navbar {
+    @apply fixed top-0 inset-x-0 z-50
+           bg-white border-b border-ink-light
+           h-[var(--navbar-h)]
+           transition-shadow duration-normal;
+  }
+  .navbar.scrolled {
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Page offset for sticky navbar */
+  .page-content {
+    padding-top: var(--navbar-h);
+  }
+
+  /* Language toggle */
+  .lang-toggle {
+    @apply flex items-center bg-ink-light rounded-pill p-1 gap-0.5;
+  }
+  .lang-toggle button {
+    @apply px-3 py-1 rounded-pill font-body font-medium text-body-sm
+           text-ink-muted transition-all duration-fast;
+  }
+  .lang-toggle button.active {
+    @apply bg-cobalt text-white shadow-sm;
+  }
+
+  /* Mascot container */
+  .mascot-wrap {
+    @apply relative select-none pointer-events-none;
+    filter: drop-shadow(var(--shadow-mascot, 0 8px 24px rgba(0,0,0,0.12)));
+  }
+
+  /* Form input */
+  .input-field {
+    @apply w-full px-4 py-3
+           bg-white border border-ink-light rounded-input
+           font-body text-body text-ink
+           placeholder:text-ink-muted
+           transition-colors duration-fast
+           focus:outline-none focus:border-cobalt focus:ring-2 focus:ring-cobalt/20;
+  }
+  [dir="rtl"] .input-field {
+    @apply text-right;
+    font-family: var(--font-arabic);
+  }
+  .input-field.error {
+    @apply border-magenta focus:border-magenta focus:ring-magenta/20;
+  }
+
+  /* Booking step dot */
+  .step-dot {
+    @apply w-9 h-9 rounded-full flex items-center justify-center
+           font-body font-semibold text-body-sm
+           border-2 border-ink-light bg-white text-ink-muted
+           transition-all duration-normal;
+  }
+  .step-dot.active {
+    @apply bg-cobalt border-cobalt text-white;
+  }
+  .step-dot.completed {
+    @apply bg-cobalt border-cobalt text-white;
+  }
+}
+
+/* ─── SCROLLBAR STYLING ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb {
+  background: var(--ink-light);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--cobalt-100); }
