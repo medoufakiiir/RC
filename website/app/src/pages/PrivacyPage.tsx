@@ -160,7 +160,7 @@ export default function PrivacyPage() {
           </motion.p>
 
           <motion.p variants={fade(0.22)} initial="hidden" animate="visible" className="text-white/30 text-sm">
-            {isAR ? 'آخر تحديث: يناير 2026' : 'Last updated: January 2026'}
+            {isAR ? 'آخر تحديث: يناير 2026' : 'Last updated: June 2026'}
           </motion.p>
         </div>
       </section>
