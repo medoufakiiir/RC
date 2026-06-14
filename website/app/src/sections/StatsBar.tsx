@@ -5,8 +5,8 @@ const stats = [
   { number: '4', label: 'statsBar.services' },
   { number: '3-12', label: 'statsBar.ages' },
   { number: '6', label: 'statsBar.workingDays' },
-  { number: 'Riyadh', label: 'statsBar.location' }
-
+  // Location headline changes based on Arabic/English (Riyadh السعودية)
+  { number: 'statsBar.city', label: 'statsBar.location' },
 ];
 
 export default function StatsBar() {
@@ -25,7 +25,7 @@ export default function StatsBar() {
               transition={{ delay: i * 0.1, duration: 0.5 }}
             >
               <span className="font-display font-bold text-3xl md:text-4xl text-white mb-1">
-                {stat.number}
+                {t(stat.number)}
               </span>
               <span className="text-white/75 text-sm font-medium">
                 {t(stat.label)}

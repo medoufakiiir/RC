@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Check, Star, Sparkles } from 'lucide-react';
@@ -14,7 +13,7 @@ const packages = [
     hoursPerWeekAR: 'حسب الحاجة',
     discount: '-',
     monthlyFee: '350 SAR/Hour',
-    monthlyFeeAR: '350 ريال/ساعة',
+    monthlyFeeAR: '٣٥٠ ريال/ساعة',
     hoursLabel: 'As Needed',
     period: 'Hour',
     price: '350',
@@ -107,9 +106,6 @@ const packages = [
 export default function PackagesPage() {
   const { locale, t } = useLanguage();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
 
   return (
     <div className="min-h-screen bg-bg-base">
@@ -145,9 +141,9 @@ export default function PackagesPage() {
 
               <motion.div
                 key={pkg.name}
-                className={`relative rounded-card overflow-hidden transition-all duration-300 ${
+                className={`relative rounded-card overflow-visible transition-all duration-300 ${
                   pkg.popular
-                    ? 'bg-[#0A0F2E] text-white scale-105 shadow-xl lg:-translate-y-4'
+                    ? 'bg-brand-blue dark:bg-[#0A0F2E] text-white scale-105 shadow-xl lg:-translate-y-4'
                     : 'bg-card border border-border shadow-card hover:-translate-y-1 hover:shadow-card-hover'
                 }`}
                 initial={{ opacity: 0, y: 30 }}
@@ -156,24 +152,28 @@ export default function PackagesPage() {
                 transition={{ delay: i * 0.1, duration: 0.5 }}
               >
                 {/* Top color bar */}
-                <div className="h-1.5 w-full" style={{ backgroundColor: pkg.popular ? '#FFCC22' : pkg.color }} />
+                <div className="h-1.5 w-full rounded-t-card" style={{ backgroundColor: pkg.popular ? '#FFCC22' : pkg.color }} />
 
                 {pkg.popular && (
-                  <div className="absolute top-4 right-4 px-3 py-1 bg-brand-yellow text-[#7A5A00] text-xs font-bold rounded-pill flex items-center gap-1">
-                    <Star size={12} fill="currentColor" />
-                    {t('packagesPage.mostPopular')}
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                    <span className="px-4 py-1 rounded-full text-xs font-bold font-sans bg-[#FFD60A] text-[#1A1200] flex items-center gap-1 whitespace-nowrap">
+                      <Star size={12} fill="currentColor" />
+                      {t('packagesPage.mostPopular')}
+                    </span>
                   </div>
                 )}
 
                 {pkg.discountLabel && !pkg.popular && pkg.discountLabel !== '-' && (
-                  <div className="absolute top-4 right-4 px-2.5 py-1 bg-brand-yellow text-[#7A5A00] text-xs font-bold rounded-pill">
-                    {pkg.discountLabel} {t('packagesPage.off')}
+                  <div className="absolute -top-3 right-4 z-10">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold font-sans bg-[#E91E8C] text-white whitespace-nowrap">
+                      {pkg.discountLabel} {t('packagesPage.off')}
+                    </span>
                   </div>
                 )}
 
 
                 <div className="p-6">
-                  <h3 className={`font-display font-bold text-lg mb-1 ${pkg.popular ? 'text-white' : 'text-text-primary'}`}>
+                  <h3 className={`font-display font-bold text-lg mt-4 mb-1 ${pkg.popular ? 'text-white' : 'text-text-primary'}`}>
                     {locale === 'ar' ? pkg.nameAR : pkg.name}
                   </h3>
                   <p className={`text-xs mb-5 ${pkg.popular ? 'text-white/60' : 'text-text-secondary'}`}>

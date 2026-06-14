@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { useLanguage } from '../LanguageProvider';
 
+const tagColors = ['#3355EE', '#E91E8C', '#7B52AB'];
+
 const conditions = [
   { label: 'Autism Spectrum Disorder (ASD)', labelAR: 'طيف التوحد' },
   { label: 'ADHD', labelAR: 'فرط الحركة وتشتت الانتباه' },
@@ -19,7 +21,7 @@ export default function WhoWeServe() {
           {/* Left: content */}
           <div>
             <motion.h2
-              className="font-display font-bold text-3xl md:text-4xl text-text-primary mb-8"
+              className="font-display font-bold text-3xl md:text-4xl text-[#08091A] mb-8"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -31,7 +33,8 @@ export default function WhoWeServe() {
               {conditions.map((condition, i) => (
                 <motion.div
                   key={condition.label}
-                  className="px-5 py-3 bg-card border-2 border-brand-blue text-brand-blue rounded-pill font-medium text-sm hover:bg-brand-blue hover:text-white transition-colors duration-200 cursor-default"
+                  className="px-4 py-2 rounded-full font-sans font-semibold text-sm text-white cursor-default"
+                  style={{ backgroundColor: tagColors[i % tagColors.length] }}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
@@ -43,7 +46,7 @@ export default function WhoWeServe() {
             </div>
 
             <motion.p
-              className="text-text-secondary mt-8 leading-relaxed"
+              className="font-sans text-[#1A1A2E] text-base leading-relaxed mt-8"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}

@@ -1,32 +1,35 @@
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Target, Heart, Lightbulb, ArrowRight, MapPin, Phone, Mail } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-
-
-
+import { useLanguage } from '../LanguageProvider';
 
 const values = [
   {
     icon: Target,
     title: 'Our Vision',
+    titleAR: 'رؤيتنا',
     description: 'To be the leading pediatric development center in the region, where every child discovers their potential and every family finds support.',
+    descriptionAR: 'أن نكون المركز الرائد لتطوير الأطفال في المنطقة، حيث يكتشف كل طفل إمكاناته وتجد كل أسرة الدعم الذي تحتاجه.',
     color: '#FFCC22',
     bg: '#FEF7CD',
   },
   {
     icon: Heart,
     title: 'Our Mission',
+    titleAR: 'مهمتنا',
     description: 'To provide exceptional, evidence-based therapeutic services that nurture each child\'s unique abilities in a warm, inclusive environment.',
+    descriptionAR: 'تقديم خدمات علاجية استثنائية ومبنية على الدليل العلمي تُنمّي القدرات الفريدة لكل طفل في بيئة دافئة وشاملة.',
     color: '#FF4D94',
     bg: '#FFDEF6',
   },
   {
     icon: Lightbulb,
     title: 'Our Values',
+    titleAR: 'قيمنا',
     description: 'Compassion, excellence, innovation, and family-centered care guide every decision we make and every interaction we have.',
+    descriptionAR: 'الرحمة والتميز والابتكار ورعاية الأسرة تقود كل قرار نتخذه وكل تفاعل نقوم به.',
     color: '#33CC44',
     bg: '#CFFFD9',
   },
@@ -35,49 +38,63 @@ const values = [
 const team = [
   {
     name: 'Mohammed Al Harthi',
-    role: 'Founders',
+    nameAR: 'محمد الحارثي',
+    role: 'Founder',
+    roleAR: 'مؤسس',
     image: null,
     initial: 'M',
     color: '#3355EE',
   },
   {
     name: 'Bader Al Harthi',
-    role: 'Founders',
+    nameAR: 'بدر الحارثي',
+    role: 'Founder',
+    roleAR: 'مؤسس',
     image: null,
     initial: 'B',
     color: '#FF4D94',
   },
   {
     name: 'Dua Atieh',
+    nameAR: 'دعاء عطية',
     role: 'Chief Executive Officer',
+    roleAR: 'الرئيسة التنفيذية',
     image: null,
     initial: 'D',
     color: '#33CC44',
   },
   {
     name: 'Our Team',
+    nameAR: 'فريقنا',
     role: 'Behavior Specialists',
+    roleAR: 'أخصائيو سلوك',
     image: null,
     initial: 'O',
     color: '#7766DD',
   },
   {
     name: 'Our Team',
+    nameAR: 'فريقنا',
     role: 'Speech & Language Therapists',
+    roleAR: 'أخصائيو نطق ولغة',
     image: null,
     initial: 'O',
     color: '#3355EE',
   },
   {
     name: 'Our Team',
+    nameAR: 'فريقنا',
     role: 'Occupational Therapists',
+    roleAR: 'أخصائيو علاج وظيفي',
     image: null,
     initial: 'O',
     color: '#FF4D94',
   },
   {
     name: 'Shaden Alhamdan',
+    nameAR: 'شادن الحمدان',
     role: 'Behavior Therapist',
+    roleAR: 'أخصائية علاج سلوكي',
     image: null,
     initial: 'S',
     color: '#7766DD',
@@ -85,9 +102,8 @@ const team = [
 ];
 
 export default function About() {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  const { locale, t } = useLanguage();
+
 
   return (
     <div className="min-h-screen bg-bg-base">
@@ -117,11 +133,27 @@ export default function About() {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <h1 className="font-display font-bold text-4xl md:text-5xl text-white mb-3">
-                Riyada Center
+              {/* Always LTR: individual letter styling must not be reversed by RTL */}
+              <h1
+                dir="ltr"
+                className="font-display font-bold text-4xl md:text-5xl mb-3 inline-flex flex-wrap items-baseline gap-0 justify-center"
+              >
+                <span style={{ color: '#ffffff' }}>R</span>
+                <span style={{ color: '#E91E8C' }}>i</span>
+                <span style={{ color: '#ffffff' }}>y</span>
+                <span style={{ color: '#3DBE6E' }}>a</span>
+                <span style={{ color: '#FFD60A' }}>d</span>
+                <span style={{ color: '#ffffff' }}>a</span>
+                <span className="mx-2" />
+                <span style={{ color: '#ffffff' }}>C</span>
+                <span style={{ color: '#E91E8C' }}>e</span>
+                <span style={{ color: '#ffffff' }}>n</span>
+                <span style={{ color: '#3DBE6E' }}>t</span>
+                <span style={{ color: '#E91E8C' }}>e</span>
+                <span style={{ color: '#ffffff' }}>r</span>
               </h1>
-              <p className="text-brand-yellow font-semibold text-sm tracking-[0.3em] uppercase">
-                Connect. Develop. Rise.
+              <p className="font-display font-semibold text-lg" style={{ color: '#E91E8C' }}>
+                {t('about.heroSlogan')}
               </p>
             </motion.div>
           </div>
@@ -130,7 +162,6 @@ export default function About() {
           <div className="relative">
             <img
               src="/assets/images/sensory-room.jpg"
-
               alt="Riyada Center facility"
               className="absolute inset-0 w-full h-full object-cover"
             />
@@ -151,7 +182,7 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            What Drives Us
+            {t('about.drivesUs')}
           </motion.h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -171,11 +202,17 @@ export default function About() {
                 >
                   <item.icon size={26} style={{ color: item.color }} />
                 </div>
-                <h3 className="font-display font-bold text-xl text-text-primary mb-3">
-                  {item.title}
+                <h3
+                  className="font-display font-bold text-lg mb-3"
+                  style={{ color: item.color === '#FFCC22' ? '#5C3D00' : item.color === '#FF4D94' ? '#6B0F3A' : '#0F4D2A' }}
+                >
+                  {locale === 'ar' ? item.titleAR : item.title}
                 </h3>
-                <p className="text-text-secondary text-sm leading-relaxed">
-                  {item.description}
+                <p
+                  className="font-sans text-sm leading-relaxed"
+                  style={{ color: item.color === '#FFCC22' ? '#5C3D00' : item.color === '#FF4D94' ? '#6B0F3A' : '#0F4D2A', opacity: 0.85 }}
+                >
+                  {locale === 'ar' ? item.descriptionAR : item.description}
                 </p>
               </motion.div>
             ))}
@@ -192,13 +229,13 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            Meet Our Team
+            {t('about.meetTeam')}
           </motion.h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {team.map((member, i) => (
               <motion.div
-                key={member.name}
+                key={`${member.name}-${i}`}
                 className="text-center group"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -212,14 +249,16 @@ export default function About() {
                   {member.initial}
                 </div>
                 <h3 className="font-semibold text-sm text-text-primary mb-1">
-                  {member.name}
+                  {locale === 'ar' ? member.nameAR : member.name}
                 </h3>
-                <p className="text-xs text-text-secondary">{member.role}</p>
+                <p className="text-xs text-text-secondary">
+                  {locale === 'ar' ? member.roleAR : member.role}
+                </p>
               </motion.div>
             ))}
           </div>
 
-          {/* Mascot between team members */}
+          {/* Mascot — fixed container so the full character is visible */}
           <motion.div
             className="flex justify-center mt-10"
             initial={{ opacity: 0 }}
@@ -229,20 +268,20 @@ export default function About() {
             <img
               src="/assets/mascots/language-explorer.png"
               alt=""
-              className="w-16 h-20 object-contain animate-float opacity-60"
+              className="w-24 h-36 object-contain object-bottom animate-float opacity-60"
             />
           </motion.div>
         </div>
       </section>
 
       {/* Contact CTA */}
-      <section className="py-24 bg-[#0A0F2E] text-white relative overflow-hidden">
+      <section className="py-24 bg-brand-blue dark:bg-[#0A0F2E] text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-brand-blue" />
           <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-brand-pink" />
         </div>
 
-        {/* Watermark (background decoration) */}
+        {/* Watermark */}
         <img
           src="/logo/Riyada%20Center%20Logo%20Souce-05.png"
           alt=""
@@ -250,20 +289,16 @@ export default function About() {
         />
 
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-
-
-
-
           <motion.h2
             className="font-display font-bold text-3xl md:text-4xl mb-6"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            Visit Our Center
+            {t('about.visitCenter')}
           </motion.h2>
           <p className="text-white/60 mb-10 max-w-lg mx-auto">
-            Come see our facility and meet our team. We&apos;d love to show you around and answer any questions.
+            {t('about.visitCopy')}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -271,31 +306,30 @@ export default function About() {
               <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                 <MapPin size={20} className="text-brand-blue" />
               </div>
-                <span className="text-sm text-white/70" dir="rtl">طريق مكة المكرمة، حي سليمان، الرياض، المملكة العربية السعودية</span>
-
+              <span className="text-sm text-white/70" dir="ltr">
+                Makkah Al Mukarramah Road, Al Sulaymaniyah District, Riyadh, Saudi Arabia
+              </span>
             </div>
-
-
             <div className="flex flex-col items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                 <Phone size={20} className="text-brand-green" />
               </div>
               <span className="text-sm text-white/70" dir="ltr">+966 555 019 224</span>
-
             </div>
             <div className="flex flex-col items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                 <Mail size={20} className="text-brand-pink" />
               </div>
               <span className="text-sm text-white/70">RC@riyada-ventures.com</span>
-
-
             </div>
           </div>
 
-          <Link to="/booking" className="inline-flex items-center gap-2 px-8 py-4 bg-brand-blue text-white font-bold rounded-pill shadow-button hover:scale-105 transition-transform">
-            Book a Visit
-            <ArrowRight size={18} />
+          <Link
+            to="/booking"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-brand-blue text-white font-bold rounded-pill shadow-button hover:scale-105 transition-transform"
+          >
+            {t('about.bookVisit')}
+            <ArrowRight size={18} className="rtl:rotate-180" />
           </Link>
         </div>
       </section>

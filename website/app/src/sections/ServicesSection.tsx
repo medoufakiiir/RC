@@ -13,7 +13,7 @@ const services = [
     bgClass: 'bg-[#FFCC22]',
     icon: ClipboardList,
     mascot: null,
-    href: '/services/speech-language-therapy',
+    href: '/services/assessments',
   },
   {
     title: 'ABA / Behavior Therapy',
@@ -24,7 +24,7 @@ const services = [
     bgClass: 'bg-[#EEFF99]',
     icon: Brain,
     mascot: '/assets/mascots/behavior-guide.png',
-    href: '/services/speech-language-therapy',
+    href: '/services/aba-therapy',
   },
   {
     title: 'Speech & Language Therapy',
@@ -35,7 +35,7 @@ const services = [
     bgClass: 'bg-[#DDBAE8]',
     icon: MessageCircle,
     mascot: '/assets/mascots/language-explorer.png',
-    href: '/services/speech-language-therapy',
+    href: '/services/speech-language',
   },
   {
     title: 'Occupational Therapy',
@@ -46,14 +46,14 @@ const services = [
     bgClass: 'bg-[#C8F5B5]',
     icon: Hand,
     mascot: '/assets/mascots/skill-builder.png',
-    href: '/services/speech-language-therapy',
+    href: '/services/occupational-therapy',
   },
 ];
 
 export default function ServicesSection() {
   const { locale, t } = useLanguage();
   return (
-    <section className="py-24 bg-card relative">
+    <section className="py-24 bg-bg-base relative">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         {/* Section heading */}
         <div className="text-center mb-16">
@@ -112,7 +112,7 @@ export default function ServicesSection() {
                   className="inline-flex items-center gap-2 text-brand-blue font-semibold text-sm hover:gap-3 transition-all duration-200"
                 >
                   {t('servicesSection.learnMore')}
-                  <ArrowRight size={16} />
+                  <ArrowRight size={16} className="rtl:rotate-180" />
                 </Link>
               </div>
             </motion.div>

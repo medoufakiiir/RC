@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { addContactMessage } from '../lib/contactStore';
+import { submitContact } from '../services/adminApi';
 import { useLanguage } from '../LanguageProvider';
 
 const serviceOptions = [
@@ -32,36 +33,41 @@ export default function Contact() {
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!form.name.trim()) newErrors.name = 'Name is required';
+    if (!form.name.trim()) newErrors.name = t('contact.errors.name');
     if (!form.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('contact.errors.email');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      newErrors.email = 'Enter a valid email address';
+      newErrors.email = t('contact.errors.emailInvalid');
     }
-    if (!form.phone.trim()) newErrors.phone = 'Phone number is required';
-    if (!form.service) newErrors.service = 'Please select a service';
-    if (!form.childAge.trim()) newErrors.childAge = 'Child age is required';
-    if (!form.concern.trim()) newErrors.concern = 'Tell us about the main concern';
-    if (!form.message.trim()) newErrors.message = 'Message is required';
+    if (!form.phone.trim()) newErrors.phone = t('contact.errors.phone');
+    if (!form.service) newErrors.service = t('contact.errors.service');
+    if (!form.childAge.trim()) newErrors.childAge = t('contact.errors.childAge');
+    if (!form.concern.trim()) newErrors.concern = t('contact.errors.concern');
+    if (!form.message.trim()) newErrors.message = t('contact.errors.message');
 
     return newErrors;
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const validationErrors = validate();
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      addContactMessage({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        service: form.service,
+      const payload = {
+        name:     form.name.trim(),
+        email:    form.email.trim(),
+        phone:    form.phone.trim(),
+        service:  form.service,
         childAge: form.childAge.trim(),
-        concern: form.concern.trim(),
-        message: form.message.trim(),
-      });
+        concern:  form.concern.trim(),
+        message:  form.message.trim(),
+      };
+      try {
+        await submitContact(payload);
+      } catch {
+        addContactMessage(payload);
+      }
       setSubmitted(true);
       setForm(initialFormState);
     }
@@ -167,7 +173,7 @@ export default function Contact() {
                           type="text"
                           value={form.name}
                           onChange={(event) => handleChange('name', event.target.value)}
-                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
+                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
                         />
                         {errors.name && <p className="mt-2 text-xs text-red-500">{errors.name}</p>}
                       </div>
@@ -180,7 +186,7 @@ export default function Contact() {
                           type="email"
                           value={form.email}
                           onChange={(event) => handleChange('email', event.target.value)}
-                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
+                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
                         />
                         {errors.email && <p className="mt-2 text-xs text-red-500">{errors.email}</p>}
                       </div>
@@ -196,7 +202,7 @@ export default function Contact() {
                           type="tel"
                           value={form.phone}
                           onChange={(event) => handleChange('phone', event.target.value)}
-                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
+                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
                         />
                         {errors.phone && <p className="mt-2 text-xs text-red-500">{errors.phone}</p>}
                       </div>
@@ -208,7 +214,7 @@ export default function Contact() {
                           id="service"
                           value={form.service}
                           onChange={(event) => handleChange('service', event.target.value)}
-                          className="mt-2 w-full rounded-3xl border border-border/80 bg-[#081026] p-4 text-sm text-white outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
+                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
                         >
                           <option value="">{t('contact.selectService')}</option>
                           {serviceOptions.map((option) => (
@@ -235,7 +241,7 @@ export default function Contact() {
                           type="text"
                           value={form.childAge}
                           onChange={(event) => handleChange('childAge', event.target.value)}
-                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
+                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
                         />
                         {errors.childAge && <p className="mt-2 text-xs text-red-500">{errors.childAge}</p>}
                       </div>
@@ -248,7 +254,7 @@ export default function Contact() {
                           type="text"
                           value={form.concern}
                           onChange={(event) => handleChange('concern', event.target.value)}
-                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
+                          className="mt-2 w-full rounded-3xl border border-border/80 bg-surface p-4 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
                         />
                         {errors.concern && <p className="mt-2 text-xs text-red-500">{errors.concern}</p>}
                       </div>
@@ -263,7 +269,7 @@ export default function Contact() {
                         rows={6}
                         value={form.message}
                         onChange={(event) => handleChange('message', event.target.value)}
-                        className="mt-2 w-full rounded-[2rem] border border-border/80 bg-surface p-4 text-sm text-text-primary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
+                        className="mt-2 w-full rounded-[2rem] border border-border/80 bg-surface p-4 text-sm text-text-primary placeholder:text-text-secondary outline-none transition-colors focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10"
                       />
                       {errors.message && <p className="mt-2 text-xs text-red-500">{errors.message}</p>}
                     </div>
@@ -303,15 +309,15 @@ export default function Contact() {
 
               <div className="space-y-5 rounded-[2rem] bg-white/5 p-6 ring-1 ring-white/10">
                 <div>
-                  <p className="text-xs text-white/50 uppercase tracking-[0.25em] mb-2">Email</p>
+                  <p className="text-xs text-white/50 uppercase tracking-[0.25em] mb-2">{t('contact.emailLabel')}</p>
                   <p className="text-sm text-white">RC@riyada-ventures.com</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white/50 uppercase tracking-[0.25em] mb-2">Phone</p>
+                  <p className="text-xs text-white/50 uppercase tracking-[0.25em] mb-2">{t('contact.phoneLabel')}</p>
                   <p className="text-sm text-white" dir="ltr">+966 55 501 9224</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white/50 uppercase tracking-[0.25em] mb-2">Location</p>
+                  <p className="text-xs text-white/50 uppercase tracking-[0.25em] mb-2">{t('contact.locationLabel')}</p>
                   <p className="text-sm text-white">
                     Makkah Al Mukarramah Road, Al Sulaymaniyah District, Riyadh, Saudi Arabia
                   </p>
@@ -320,12 +326,12 @@ export default function Contact() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-[2rem] bg-white/5 p-6 ring-1 ring-white/10">
-                  <p className="text-sm font-semibold text-white mb-2">Fast Response</p>
-                  <p className="text-xs text-white/60">We reply within one business day.</p>
+                  <p className="text-sm font-semibold text-white mb-2">{t('contact.fastResponse')}</p>
+                  <p className="text-xs text-white/60">{t('contact.fastResponseSub')}</p>
                 </div>
                 <div className="rounded-[2rem] bg-white/5 p-6 ring-1 ring-white/10">
-                  <p className="text-sm font-semibold text-white mb-2">Expert Team</p>
-                  <p className="text-xs text-white/60">Certified pediatric therapists and specialists.</p>
+                  <p className="text-sm font-semibold text-white mb-2">{t('contact.expertTeam')}</p>
+                  <p className="text-xs text-white/60">{t('contact.expertTeamSub')}</p>
                 </div>
               </div>
             </motion.aside>

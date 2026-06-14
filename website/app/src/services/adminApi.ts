@@ -1,0 +1,120 @@
+const BASE = import.meta.env.VITE_API_URL ?? 'https://riyada-medical-backend-production.up.railway.app';
+
+function getToken() {
+  return localStorage.getItem('admin_token') ?? '';
+}
+
+async function req<T>(method: string, path: string, body?: unknown, auth = true): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (auth) headers['Authorization'] = `Bearer ${getToken()}`;
+  const res = await fetch(`${BASE}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error ?? res.statusText);
+  }
+  return res.json();
+}
+
+export const adminApi = {
+  // Auth
+  login: (email: string, password: string) =>
+    req<{ token: string; user: AdminUser }>('POST', '/auth/login', { email, password }, false),
+  me: () => req<AdminUser>('GET', '/auth/me'),
+
+  // Dashboard
+  dashboard: () => req<DashboardData>('GET', '/admin/dashboard'),
+
+  // Bookings
+  bookings: (params?: BookingParams) =>
+    req<BookingList>('GET', `/admin/bookings?${new URLSearchParams(params as never).toString()}`),
+  booking: (id: string) => req<Booking>('GET', `/admin/bookings/${id}`),
+  updateBooking: (id: string, data: Partial<Booking>) => req<Booking>('PATCH', `/admin/bookings/${id}`, data),
+  deleteBooking: (id: string) => req('DELETE', `/admin/bookings/${id}`),
+
+  // Messages
+  messages: (params?: MessageParams) =>
+    req<MessageList>('GET', `/admin/messages?${new URLSearchParams(params as never).toString()}`),
+  message: (id: string) => req<ContactMessage>('GET', `/admin/messages/${id}`),
+  markAllRead: () => req('PATCH', '/admin/messages/mark-all-read', {}),
+  updateMessage: (id: string, data: Partial<ContactMessage>) => req<ContactMessage>('PATCH', `/admin/messages/${id}`, data),
+  deleteMessage: (id: string) => req('DELETE', `/admin/messages/${id}`),
+
+  // Services
+  services: () => req<Service[]>('GET', '/admin/services'),
+  updateService: (id: string, data: Partial<Service>) => req<Service>('PATCH', `/admin/services/${id}`, data),
+
+  // Packages
+  packages: () => req<Package[]>('GET', '/admin/packages'),
+  createPackage: (data: Omit<Package, 'id' | 'createdAt' | 'updatedAt'>) => req<Package>('POST', '/admin/packages', data),
+  updatePackage: (id: string, data: Partial<Package>) => req<Package>('PATCH', `/admin/packages/${id}`, data),
+  deletePackage: (id: string) => req('DELETE', `/admin/packages/${id}`),
+
+  // Team
+  team: () => req<TeamMember[]>('GET', '/admin/team'),
+  createTeamMember: (data: Omit<TeamMember, 'id' | 'createdAt' | 'updatedAt'>) => req<TeamMember>('POST', '/admin/team', data),
+  updateTeamMember: (id: string, data: Partial<TeamMember>) => req<TeamMember>('PATCH', `/admin/team/${id}`, data),
+  deleteTeamMember: (id: string) => req('DELETE', `/admin/team/${id}`),
+
+  // Settings
+  settings: () => req<Record<string, string>>('GET', '/admin/settings'),
+  updateSettings: (data: Record<string, string>) => req('PATCH', '/admin/settings', data),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    req('POST', '/admin/settings/change-password', { currentPassword, newPassword }),
+};
+
+// Public form submission
+export async function submitBooking(data: Record<string, string>) {
+  const res = await fetch(`${BASE}/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? 'Booking failed');
+  return res.json();
+}
+
+export async function submitContact(data: Record<string, string>) {
+  const res = await fetch(`${BASE}/contact`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? 'Message failed');
+  return res.json();
+}
+
+// Types
+export interface AdminUser { id: string; email: string; name: string; role: string }
+
+export interface Booking {
+  id: string; ref: string; parentName: string; childName: string; childAge: string;
+  phone: string; email: string; service: string; package: string;
+  date: string; time: string; notes: string; status: string; adminNotes: string;
+  createdAt: string; updatedAt: string;
+}
+
+export interface ContactMessage {
+  id: string; name: string; email: string; phone: string; service: string;
+  childAge: string; concern: string; message: string; isRead: boolean; createdAt: string;
+}
+
+export interface Service {
+  id: string; slug: string; titleEn: string; titleAr: string;
+  descEn: string; descAr: string; isActive: boolean; order: number;
+}
+
+export interface Package {
+  id: string; nameEn: string; nameAr: string; price: number; currency: string;
+  period: string; featuresEn: string; featuresAr: string;
+  isPopular: boolean; isActive: boolean; order: number;
+  createdAt: string; updatedAt: string;
+}
+
+export interface TeamMember {
+  id: string; nameEn: string; nameAr: string; roleEn: string; roleAr: string;
+  bio: string; initials: string; color: string; order: number; isActive: boolean;
+  createdAt: string; updatedAt: string;
+}
+
+export interface DashboardData {
+  stats: { totalBookings: number; pendingBookings: number; totalMessages: number; unreadMessages: number };
+  recentBookings: Booking[];
+  recentMessages: ContactMessage[];
+}
+
+export interface BookingList { bookings: Booking[]; total: number; page: number; pages: number }
+export interface MessageList { messages: ContactMessage[]; total: number; page: number; pages: number }
+export interface BookingParams { status?: string; search?: string; page?: string; limit?: string }
+export interface MessageParams { read?: string; page?: string; limit?: string }

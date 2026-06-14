@@ -16,6 +16,7 @@ import Forbidden from './pages/Forbidden';
 import { ThemeInitializer } from './ThemeInitializer';
 import { LanguageProvider } from './LanguageProvider';
 import ScrollToTop from './components/ScrollToTop';
+import ChatWidget from './components/chatbot/ChatWidget';
 
 // Admin
 import AdminLayout from './components/admin/AdminLayout';
@@ -29,6 +30,7 @@ import ServicesAdmin from './pages/admin/ServicesAdmin';
 import PackagesAdmin from './pages/admin/PackagesAdmin';
 import TeamAdmin from './pages/admin/TeamAdmin';
 import AdminSettings from './pages/admin/AdminSettings';
+import ChatbotAdmin from './pages/admin/Chatbot';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('admin_token');
@@ -41,6 +43,7 @@ export default function App() {
     <ThemeInitializer>
       <LanguageProvider>
         <ScrollToTop />
+        <ChatWidget />
         <Routes>
           {/* Public site */}
           <Route path="/" element={<Home />} />
@@ -71,6 +74,7 @@ export default function App() {
             <Route path="services" element={<ServicesAdmin />} />
             <Route path="packages" element={<PackagesAdmin />} />
             <Route path="team" element={<TeamAdmin />} />
+            <Route path="chatbot"  element={<ChatbotAdmin />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
         </Routes>

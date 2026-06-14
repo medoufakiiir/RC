@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Tajawal:wght@300;400;500;700;800&display=swap');
+
 /* Brand font */
 @font-face {
   font-family: 'DXLactos';
@@ -7,35 +9,33 @@
   font-display: swap;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 240 33% 97%;
-    --bg-base: 240 33% 97%;
-    --foreground: 0 0% 12%;
-    --text-primary: 0 0% 12%;
-    --text-secondary: 240 5.9% 42%;
-    --card: 0 0% 100%;
-    --surface: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
+    --background: 0 0% 100%;
+    --bg-base: 0 0% 100%;          /* #FFFFFF pure white page bg */
+    --foreground: 221 39% 11%;
+    --text-primary: 221 39% 11%;   /* #111827 gray-900 */
+    --text-secondary: 215 14% 34%; /* #4B5563 gray-600 */
+    --card: 220 14% 98%;           /* #F9FAFB gray-50 — cards sit above white bg */
+    --surface: 0 0% 100%;          /* #FFFFFF white — form inputs */
+    --card-foreground: 221 39% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 12%;
+    --popover-foreground: 221 39% 11%;
     --primary: 229 82% 57%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --secondary: 220 14% 96%;      /* #F3F4F6 gray-100 */
+    --secondary-foreground: 215 14% 34%;
+    --muted: 220 14% 96%;          /* #F3F4F6 gray-100 */
+    --muted-foreground: 220 9% 46%; /* #6B7280 gray-500 */
+    --accent: 220 14% 96%;
+    --accent-foreground: 215 14% 34%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 13% 91%;
+    --border: 220 13% 91%;         /* #E5E7EB gray-200 */
     --input: 220 13% 91%;
     --ring: 229 82% 57%;
     --radius: 0.625rem;
@@ -49,39 +49,51 @@
     --sidebar-ring: 229 82% 57%;
   }
 
-  :root.dark {
-    --background: 240 10% 12%;
-    --bg-base: 240 10% 12%;
-    --foreground: 0 0% 98%;
-    --text-primary: 0 0% 98%;
-    --text-secondary: 240 5% 70%;
-    --card: 240 10% 14%;
-    --surface: 240 10% 14%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 14%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 229 82% 57%;
+:root.dark {
+    /* Midnight Cobalt */
+    --background: 222 100% 6%; /* #07090F */
+    --bg-base: 222 100% 6%;
+
+    --foreground: 217 100% 95%; /* cool white */
+    --text-primary: 222 100% 96%; /* #F0F4FF */
+    --text-secondary: 222 19% 64%; /* #6B7A99 */
+
+    --card: 228 76% 10%; /* #0F1320 */
+    --surface: 228 76% 10%;
+    --card-foreground: 222 100% 96%;
+    --popover: 228 76% 10%;
+    --popover-foreground: 222 100% 96%;
+
+    --primary: 228 85% 60%; /* #3355EE */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 74%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+
+    --secondary: 228 76% 10%;
+    --secondary-foreground: 222 100% 96%;
+
+    --muted: 228 76% 10%;
+    --muted-foreground: 222 19% 64%;
+
+    --accent: 228 76% 10%;
+    --accent-foreground: 222 100% 96%;
+
+    --destructive: 12 100% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 28%;
-    --input: 240 4% 28%;
-    --ring: 229 82% 57%;
-    --sidebar-background: 240 10% 12%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 240 10% 12%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 4% 28%;
-    --sidebar-ring: 229 82% 57%;
+
+    --border: 222 41% 24%; /* #1E2440 */
+    --input: 222 41% 24%;
+    --ring: 228 85% 60%;
+
+    --sidebar-background: 222 100% 6%;
+    --sidebar-foreground: 222 100% 96%;
+    --sidebar-primary: 222 100% 96%;
+    --sidebar-primary-foreground: 222 100% 6%;
+
+    --sidebar-accent: 228 76% 10%;
+    --sidebar-accent-foreground: 222 100% 96%;
+    --sidebar-border: 222 41% 24%;
+    --sidebar-ring: 228 85% 60%;
   }
+
 }
 
 
@@ -93,11 +105,42 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-bg-base text-text-primary font-body;
-    font-family: 'DXLactos', sans-serif;
-
+    @apply bg-bg-base text-text-primary;
+    font-family: 'Nunito', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  html[dir="rtl"] body {
+    font-family: 'Tajawal', sans-serif;
+    line-height: 1.9;
+    letter-spacing: 0;
+    font-size: 16px;
+  }
+
+  html[dir="rtl"] h1,
+  html[dir="rtl"] h2,
+  html[dir="rtl"] h3,
+  html[dir="rtl"] h4,
+  html[dir="rtl"] h5,
+  html[dir="rtl"] h6 {
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    line-height: 1.6;
+    letter-spacing: 0;
+  }
+
+  html[dir="rtl"] p,
+  html[dir="rtl"] span,
+  html[dir="rtl"] li,
+  html[dir="rtl"] label,
+  html[dir="rtl"] input,
+  html[dir="rtl"] textarea,
+  html[dir="rtl"] select,
+  html[dir="rtl"] button,
+  html[dir="rtl"] a {
+    font-family: 'Tajawal', sans-serif;
+    letter-spacing: 0;
   }
 }
 
@@ -105,6 +148,36 @@
   .btn-primary {
     @apply inline-flex items-center justify-center px-8 py-3.5 bg-brand-blue text-primary-foreground font-semibold rounded-pill shadow-button transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95;
   }
+
+  /* Midnight Cobalt helpers */
+  .mc-hero-radial {
+    background: radial-gradient(circle at 50% 20%, #0D1640 0%, #07090F 62%, #07090F 100%);
+  }
+
+  .mc-heading {
+    background: linear-gradient(90deg, #3355EE 0%, #7B9FFF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .mc-hero-texture {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(123,159,255,1) 1px, transparent 0),
+      radial-gradient(circle at 50% 50%, rgba(51,85,238,1) 0 1px, transparent 1px 100%);
+    background-size: 18px 18px, 100% 100%;
+    mix-blend-mode: screen;
+  }
+
+  .mc-mascot-halo {
+    filter: drop-shadow(0 0 18px rgba(51,85,238,0.35)) drop-shadow(0 0 40px rgba(51,85,238,0.18));
+  }
+
+
 
   .btn-secondary {
     @apply inline-flex items-center justify-center px-8 py-3.5 border-2 border-brand-blue text-brand-blue font-semibold rounded-pill transition-all duration-200 hover:bg-brand-blue hover:text-primary-foreground hover:scale-105;

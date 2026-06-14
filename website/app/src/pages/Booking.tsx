@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -17,6 +17,8 @@ import {
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { addBooking } from '../lib/bookingsStore';
+import { submitBooking } from '../services/adminApi';
+import { useLanguage } from '../LanguageProvider';
 
 
 
@@ -24,8 +26,9 @@ const services = [
   {
     id: 'assessment',
     title: 'Assessment',
-    titleAR: 'Assessment',
+    titleAR: 'التقييم',
     description: 'Initial evaluation and consultation',
+    descriptionAR: 'التقييم الأولي والاستشارة',
     icon: ClipboardList,
     color: '#FFCC22',
     mascot: null,
@@ -33,8 +36,9 @@ const services = [
   {
     id: 'aba',
     title: 'ABA Therapy',
-    titleAR: 'ABA Therapy',
+    titleAR: 'علاج ABA',
     description: 'Behavior therapy and support',
+    descriptionAR: 'علاج السلوك والدعم',
     icon: Brain,
     color: '#EEFF99',
     mascot: '/assets/mascots/behavior-guide.png',
@@ -42,8 +46,9 @@ const services = [
   {
     id: 'speech',
     title: 'Speech Therapy',
-    titleAR: 'Speech Therapy',
+    titleAR: 'علاج النطق',
     description: 'Language and communication',
+    descriptionAR: 'اللغة والتواصل',
     icon: MessageCircle,
     color: '#DDBAE8',
     mascot: '/assets/mascots/language-explorer.png',
@@ -51,8 +56,9 @@ const services = [
   {
     id: 'ot',
     title: 'Occupational Therapy',
-    titleAR: 'OT Therapy',
+    titleAR: 'العلاج الوظيفي',
     description: 'Motor skills and sensory integration',
+    descriptionAR: 'المهارات الحركية والتكامل الحسي',
     icon: Hand,
     color: '#C8F5B5',
     mascot: '/assets/mascots/skill-builder.png',
@@ -68,62 +74,72 @@ const packages = [
   {
     id: 'individual',
     name: 'Individual Sessions',
+    nameAR: 'جلسات فردية',
     description: 'Pay-as-you-go therapy at SAR 350/hour',
+    descriptionAR: 'علاج حسب الحاجة بـ ٣٥٠ ريال/ساعة',
     price: '350 SAR/hr',
+    priceAR: '٣٥٠ ريال/ساعة',
   },
   {
     id: 'package-a',
     name: 'Package A',
+    nameAR: 'الباقة A',
     description: '5 hours/week — 6,650 SAR per month',
+    descriptionAR: '٥ ساعات/أسبوع — ٦٬٦٥٠ ريال شهريًا',
     price: '6,650 SAR/mo',
+    priceAR: '٦٬٦٥٠ ريال/شهر',
   },
   {
     id: 'package-b',
     name: 'Package B',
+    nameAR: 'الباقة B',
     description: '10 hours/week — 12,600 SAR per month',
+    descriptionAR: '١٠ ساعات/أسبوع — ١٢٬٦٠٠ ريال شهريًا',
     price: '12,600 SAR/mo',
+    priceAR: '١٢٬٦٠٠ ريال/شهر',
   },
   {
     id: 'package-c',
     name: 'Package C',
+    nameAR: 'الباقة C',
     description: '15 hours/week — 17,850 SAR per month',
+    descriptionAR: '١٥ ساعة/أسبوع — ١٧٬٨٥٠ ريال شهريًا',
     price: '17,850 SAR/mo',
+    priceAR: '١٧٬٨٥٠ ريال/شهر',
   },
   {
     id: 'intensive',
     name: 'Intensive Package',
+    nameAR: 'الباقة المكثفة',
     description: '30 hours/week — 29,400 SAR per month',
+    descriptionAR: '٣٠ ساعة/أسبوع — ٢٩٬٤٠٠ ريال شهريًا',
     price: '29,400 SAR/mo',
+    priceAR: '٢٩٬٤٠٠ ريال/شهر',
   },
 ];
 
-const steps = [
-  { label: 'Service', labelAR: 'Service' },
-  { label: 'Details', labelAR: 'Details' },
-  { label: 'Date', labelAR: 'Date' },
-  { label: 'Time', labelAR: 'Time' },
-  { label: 'Confirm', labelAR: 'Confirm' },
-];
-
 export default function Booking() {
+  const { locale, t } = useLanguage();
+  const isRTL = locale === 'ar';
+
+  const steps = [
+    { label: t('booking.stepService') },
+    { label: t('booking.stepDetails') },
+    { label: t('booking.stepDate') },
+    { label: t('booking.stepTime') },
+    { label: t('booking.stepConfirm') },
+  ];
+
   const [step, setStep] = useState(0);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-const [selectedTime, setSelectedTime] = useState<string | null>(null);
-const [confirmed, setConfirmed] = useState(false);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
   const [bookingRef, setBookingRef] = useState<string | null>(null);
   const [formData, setFormData] = useState({ childName: '', age: '', parentName: '', phone: '', notes: '' });
 
-
-
-
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  const generateCalendarDays = () => {
+  const calendarDays = useMemo(() => {
     const days = [];
     const today = new Date();
     for (let i = 0; i < 28; i++) {
@@ -133,36 +149,53 @@ const [confirmed, setConfirmed] = useState(false);
       days.push({
         date: d.toISOString().split('T')[0],
         day: d.getDate(),
-        month: d.toLocaleString('en', { month: 'short' }),
-        weekday: d.toLocaleString('en', { weekday: 'short' }),
+        month: d.toLocaleString(locale, { month: 'short' }),
+        weekday: d.toLocaleString(locale, { weekday: 'short' }),
         available: !isWeekend && Math.random() > 0.2,
         isToday: i === 0,
       });
     }
     return days;
-  };
+  }, [locale]);
 
-  const calendarDays = generateCalendarDays();
-
-const handleNext = () => {
-
+  const handleNext = async () => {
     if (step === 4) {
       if (!selectedService || !selectedDate || !selectedTime) return;
 
-      const booking = addBooking({
-        patient: formData.childName,
-        service: services.find((s) => s.id === selectedService)?.title ?? '',
-        package: packages.find((pkg) => pkg.id === selectedPackage)?.name ?? '',
-        date: selectedDate,
-        time: selectedTime,
-        status: 'Confirmed',
-        parentName: formData.parentName,
-        phone: formData.phone,
-        age: formData.age,
-        notes: formData.notes,
-      });
+      const serviceTitle = services.find((s) => s.id === selectedService)?.title ?? '';
+      const packageName  = packages.find((pkg) => pkg.id === selectedPackage)?.name ?? '';
 
-      setBookingRef(booking.id);
+      let ref: string;
+      try {
+        const result = await submitBooking({
+          parentName: formData.parentName,
+          childName:  formData.childName,
+          childAge:   formData.age,
+          phone:      formData.phone,
+          service:    serviceTitle,
+          package:    packageName,
+          date:       selectedDate,
+          time:       selectedTime,
+          notes:      formData.notes,
+        });
+        ref = result.ref;
+      } catch {
+        const booking = addBooking({
+          patient: formData.childName,
+          service: serviceTitle,
+          package: packageName,
+          date:    selectedDate,
+          time:    selectedTime,
+          status:  'Confirmed',
+          parentName: formData.parentName,
+          phone:   formData.phone,
+          age:     formData.age,
+          notes:   formData.notes,
+        });
+        ref = booking.id;
+      }
+
+      setBookingRef(ref);
       setConfirmed(true);
     } else {
       setStep((prev) => Math.min(prev + 1, 4));
@@ -181,6 +214,10 @@ const handleNext = () => {
       default: return false;
     }
   };
+
+  const weekdayHeaders = isRTL
+    ? ['أحد', 'إثن', 'ثلث', 'أرب', 'خمس', 'جمع', 'سبت']
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   if (confirmed) {
     return (
@@ -207,56 +244,64 @@ const handleNext = () => {
 
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-pill bg-brand-green/10 text-brand-green font-semibold text-sm mb-4">
               <CheckCircle2 size={16} />
-              Booking Confirmed!
+              {t('booking.bookingConfirmed')}
             </div>
 
             <h2 className="font-display font-bold text-2xl text-text-primary mb-2">
-              Your Session is Booked
+              {t('booking.bookingTitle')}
             </h2>
             <p className="text-text-secondary text-sm mb-6">
-              We&apos;ve sent a confirmation to your phone. See you soon!
+              {t('booking.bookingCopy')}
             </p>
 
             <div className="bg-card rounded-card p-6 shadow-card mb-8 text-left">
               <div className="text-center mb-4">
-                <span className="text-xs text-text-secondary uppercase tracking-wider">Reference</span>
+                <span className="text-xs text-text-secondary uppercase tracking-wider">{t('booking.reference')}</span>
                 <p className="font-display font-bold text-2xl text-brand-blue">{bookingRef ?? '—'}</p>
               </div>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Service</span>
-                  <span className="font-medium">{services.find(s => s.id === selectedService)?.title}</span>
+                  <span className="text-text-secondary">{t('booking.service')}</span>
+                  <span className="font-medium">
+                    {isRTL
+                      ? services.find(s => s.id === selectedService)?.titleAR
+                      : services.find(s => s.id === selectedService)?.title}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Package</span>
-                  <span className="font-medium">{packages.find((pkg) => pkg.id === selectedPackage)?.name ?? '—'}</span>
+                  <span className="text-text-secondary">{t('booking.package')}</span>
+                  <span className="font-medium">
+                    {isRTL
+                      ? packages.find(pkg => pkg.id === selectedPackage)?.nameAR
+                      : packages.find(pkg => pkg.id === selectedPackage)?.name ?? '—'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Parent</span>
+                  <span className="text-text-secondary">{t('booking.parent')}</span>
                   <span className="font-medium">{formData.parentName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Phone</span>
+                  <span className="text-text-secondary">{t('booking.phone')}</span>
                   <span className="font-medium">{formData.phone}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Date</span>
+                  <span className="text-text-secondary">{t('booking.date')}</span>
                   <span className="font-medium">{selectedDate}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Time</span>
+                  <span className="text-text-secondary">{t('booking.time')}</span>
                   <span className="font-medium">{selectedTime}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Child</span>
+                  <span className="text-text-secondary">{t('booking.child')}</span>
                   <span className="font-medium">{formData.childName}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-wrap justify-center gap-3">
-              <Link to="/" className="btn-primary">Back to Home</Link>
-              <Link to="/packages" className="btn-secondary">View Packages</Link>
+              <Link to="/" className="btn-primary">{t('booking.backHome')}</Link>
+              <Link to="/packages" className="btn-secondary">{t('booking.viewPackages')}</Link>
             </div>
 
             {/* Confetti dots */}
@@ -290,7 +335,7 @@ const handleNext = () => {
               {/* Connecting line */}
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-border/40" />
               <div
-                className="absolute bottom-0 left-0 h-1 bg-brand-blue transition-all duration-500"
+                className={`absolute bottom-0 h-1 bg-brand-blue transition-all duration-500 ${isRTL ? 'right-0' : 'left-0'}`}
                 style={{ width: `${(step / 4) * 100}%` }}
               />
 
@@ -321,16 +366,16 @@ const handleNext = () => {
               {step === 0 && (
                 <motion.div
                   key="step0"
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
+                  exit={{ opacity: 0, x: isRTL ? 20 : -20 }}
                   transition={{ duration: 0.3 }}
                 >
                   <h2 className="font-display font-bold text-xl text-text-primary mb-2">
-                    Choose a Service
+                    {t('booking.chooseService')}
                   </h2>
                   <p className="text-text-secondary text-sm mb-6">
-                    Select the therapy service your child needs.
+                    {t('booking.serviceDescription')}
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -357,13 +402,15 @@ const handleNext = () => {
                           </div>
                           <div>
                             <h3 className="font-semibold text-sm text-text-primary mb-1">
-                              {service.title}
+                              {isRTL ? service.titleAR : service.title}
                             </h3>
-                            <p className="text-xs text-text-secondary">{service.description}</p>
+                            <p className="text-xs text-text-secondary">
+                              {isRTL ? service.descriptionAR : service.description}
+                            </p>
                           </div>
                         </div>
                         {selectedService === service.id && (
-                          <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center">
+                          <div className={`absolute top-3 ${isRTL ? 'left-3' : 'right-3'} w-5 h-5 rounded-full bg-brand-blue flex items-center justify-center`}>
                             <Check size={12} className="text-white" />
                           </div>
                         )}
@@ -371,109 +418,118 @@ const handleNext = () => {
                     ))}
                   </div>
 
-              <div className="mt-10">
-                <h3 className="font-display font-semibold text-lg text-text-primary mb-4">Choose a package</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {packages.map((pkg) => (
-                    <button
-                      key={pkg.id}
-                      type="button"
-                      onClick={() => setSelectedPackage(pkg.id)}
-                      className={`group w-full rounded-3xl border p-5 text-left transition-all duration-200 ${
-                        selectedPackage === pkg.id
-                          ? 'border-brand-blue bg-brand-blue/10 shadow-lg'
-                          : 'border-border bg-surface hover:border-brand-blue'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <h4 className="font-semibold text-text-primary">{pkg.name}</h4>
-                          <p className="text-sm text-text-secondary mt-1">{pkg.description}</p>
-                        </div>
-                        <span className="text-sm font-semibold text-brand-blue">{pkg.price}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+                  <div className="mt-10">
+                    <h3 className="font-display font-semibold text-lg text-text-primary mb-4">
+                      {t('booking.choosePackage')}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {packages.map((pkg) => (
+                        <button
+                          key={pkg.id}
+                          type="button"
+                          onClick={() => setSelectedPackage(pkg.id)}
+                          className={`group w-full rounded-3xl border p-5 text-left transition-all duration-200 ${
+                            selectedPackage === pkg.id
+                              ? 'border-brand-blue bg-brand-blue/10 shadow-lg'
+                              : 'border-border bg-surface hover:border-brand-blue'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <h4 className="font-semibold text-text-primary">
+                                {isRTL ? pkg.nameAR : pkg.name}
+                              </h4>
+                              <p className="text-sm text-text-secondary mt-1">
+                                {isRTL ? pkg.descriptionAR : pkg.description}
+                              </p>
+                            </div>
+                            <span className="text-sm font-semibold text-brand-blue shrink-0">
+                              {isRTL ? pkg.priceAR : pkg.price}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </motion.div>
               )}
 
               {step === 1 && (
                 <motion.div
                   key="step1"
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
+                  exit={{ opacity: 0, x: isRTL ? 20 : -20 }}
                   transition={{ duration: 0.3 }}
                 >
                   <h2 className="font-display font-bold text-xl text-text-primary mb-2">
-                    Child Information
+                    {t('booking.childInformation')}
                   </h2>
                   <p className="text-text-secondary text-sm mb-6">
-                    Tell us about your child so we can prepare.
+                    {t('booking.childDescription')}
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-text-primary mb-1.5">
-                        Child&apos;s Name
+                        {t('booking.childName')}
                       </label>
                       <input
                         type="text"
                         value={formData.childName}
                         onChange={(e) => setFormData({ ...formData, childName: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary"
-                        placeholder="Enter name"
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary"
+                        placeholder={t('booking.enterName')}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-text-primary mb-1.5">
-                        Age
+                        {t('booking.age')}
                       </label>
                       <input
                         type="number"
                         value={formData.age}
                         onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary"
-                        placeholder="Years"
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary"
+                        placeholder={t('booking.years')}
                         min="3"
                         max="12"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-text-primary mb-1.5">
-                        Parent&apos;s Name
+                        {t('booking.parentName')}
                       </label>
                       <input
                         type="text"
                         value={formData.parentName}
                         onChange={(e) => setFormData({ ...formData, parentName: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary"
-                        placeholder="Your name"
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary"
+                        placeholder={t('booking.yourName')}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-text-primary mb-1.5">
-                        Phone Number
+                        {t('booking.phoneNumber')}
                       </label>
                       <input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary"
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary"
                         placeholder="+966 5X XXX XXXX"
+                        dir="ltr"
                       />
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-text-primary mb-1.5">
-                        Additional Notes (Optional)
+                        {t('booking.notes')}
                       </label>
                       <textarea
                         value={formData.notes}
                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm resize-none bg-surface text-text-primary"
-                        placeholder="Any specific concerns or information..."
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm resize-none bg-surface text-text-primary placeholder:text-text-secondary"
+                        placeholder={t('booking.notesPlaceholder')}
                         rows={3}
                       />
                     </div>
@@ -484,21 +540,21 @@ const handleNext = () => {
               {step === 2 && (
                 <motion.div
                   key="step2"
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
+                  exit={{ opacity: 0, x: isRTL ? 20 : -20 }}
                   transition={{ duration: 0.3 }}
                 >
                   <h2 className="font-display font-bold text-xl text-text-primary mb-2 flex items-center gap-2">
                     <CalendarDays size={22} className="text-brand-blue" />
-                    Select Date
+                    {t('booking.selectDate')}
                   </h2>
                   <p className="text-text-secondary text-sm mb-6">
-                    Choose an available date for the session.
+                    {t('booking.selectDateDescription')}
                   </p>
 
                   <div className="grid grid-cols-7 gap-2">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+                    {weekdayHeaders.map((d) => (
                       <div key={d} className="text-center text-xs font-medium text-text-secondary py-2">
                         {d}
                       </div>
@@ -523,7 +579,9 @@ const handleNext = () => {
                           }`}
                         >
                           <span className="font-semibold">{day.day}</span>
-                          {day.isToday && <span className="text-[9px] mt-0.5 opacity-70">Today</span>}
+                          {day.isToday && (
+                            <span className="text-[9px] mt-0.5 opacity-70">{t('booking.today')}</span>
+                          )}
                         </button>
                       );
                     })}
@@ -534,17 +592,17 @@ const handleNext = () => {
               {step === 3 && (
                 <motion.div
                   key="step3"
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
+                  exit={{ opacity: 0, x: isRTL ? 20 : -20 }}
                   transition={{ duration: 0.3 }}
                 >
                   <h2 className="font-display font-bold text-xl text-text-primary mb-2 flex items-center gap-2">
                     <Clock size={22} className="text-brand-blue" />
-                    Select Time
+                    {t('booking.selectTime')}
                   </h2>
                   <p className="text-text-secondary text-sm mb-6">
-                    Choose your preferred time slot.
+                    {t('booking.selectTimeDescription')}
                   </p>
 
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -563,6 +621,7 @@ const handleNext = () => {
                               ? 'bg-surface text-text-secondary/70 line-through cursor-not-allowed'
                               : 'bg-surface border border-border text-text-primary hover:border-brand-blue hover:text-brand-blue'
                           }`}
+                          dir="ltr"
                         >
                           {slot}
                         </button>
@@ -575,9 +634,9 @@ const handleNext = () => {
               {step === 4 && (
                 <motion.div
                   key="step4"
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: isRTL ? -20 : 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
+                  exit={{ opacity: 0, x: isRTL ? 20 : -20 }}
                   transition={{ duration: 0.3 }}
                 >
                   <div className="text-center mb-6">
@@ -585,37 +644,43 @@ const handleNext = () => {
                       <Sparkles size={28} className="text-brand-blue" />
                     </div>
                     <h2 className="font-display font-bold text-xl text-text-primary">
-                      Confirm Your Booking
+                      {t('booking.confirmYourBooking')}
                     </h2>
                     <p className="text-text-secondary text-sm mt-1">
-                      Review the details below
+                      {t('booking.review')}
                     </p>
                   </div>
 
                   <div className="bg-surface rounded-2xl p-6 space-y-4 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-text-secondary">Service</span>
-                      <span className="font-medium">{services.find(s => s.id === selectedService)?.title}</span>
+                      <span className="text-text-secondary">{t('booking.service')}</span>
+                      <span className="font-medium">
+                        {isRTL
+                          ? services.find(s => s.id === selectedService)?.titleAR
+                          : services.find(s => s.id === selectedService)?.title}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-text-secondary">Child</span>
-                      <span className="font-medium">{formData.childName} ({formData.age} yrs)</span>
+                      <span className="text-text-secondary">{t('booking.child')}</span>
+                      <span className="font-medium">
+                        {formData.childName} ({formData.age} {t('booking.yrs')})
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-text-secondary">Parent</span>
+                      <span className="text-text-secondary">{t('booking.parent')}</span>
                       <span className="font-medium">{formData.parentName}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-text-secondary">Phone</span>
-                      <span className="font-medium">{formData.phone}</span>
+                      <span className="text-text-secondary">{t('booking.phone')}</span>
+                      <span className="font-medium" dir="ltr">{formData.phone}</span>
                     </div>
                     <div className="border-t border-border pt-4 flex justify-between">
-                      <span className="text-text-secondary">Date</span>
+                      <span className="text-text-secondary">{t('booking.date')}</span>
                       <span className="font-medium">{selectedDate}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-text-secondary">Time</span>
-                      <span className="font-medium">{selectedTime}</span>
+                      <span className="text-text-secondary">{t('booking.time')}</span>
+                      <span className="font-medium" dir="ltr">{selectedTime}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -633,8 +698,8 @@ const handleNext = () => {
                     : 'text-text-secondary hover:bg-surface'
                 }`}
               >
-                <ChevronLeft size={16} />
-                Back
+                {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+                {t('booking.back')}
               </button>
 
               <button
@@ -646,8 +711,8 @@ const handleNext = () => {
                     : 'bg-border/30 text-text-secondary/70 cursor-not-allowed'
                 }`}
               >
-                {step === 4 ? 'Confirm Booking' : 'Continue'}
-                <ChevronRight size={16} />
+                {step === 4 ? t('booking.confirmBooking') : t('booking.continue')}
+                {isRTL ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
               </button>
             </div>
           </div>

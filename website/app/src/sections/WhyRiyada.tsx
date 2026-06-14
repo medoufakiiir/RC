@@ -56,7 +56,7 @@ const benefits = [
 export default function WhyRiyada() {
   const { locale, t } = useLanguage();
   return (
-    <section className="py-24 bg-brand-blue relative overflow-hidden">
+    <section className="py-24 bg-gray-50 dark:bg-brand-blue relative overflow-hidden">
       {/* Decorative skill builder peek */}
       <div className="absolute -bottom-8 -right-8 opacity-10">
         <img
@@ -68,7 +68,7 @@ export default function WhyRiyada() {
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <motion.h2
-          className="font-display font-bold text-3xl md:text-4xl text-white text-center mb-14"
+          className="font-display font-bold text-3xl md:text-4xl text-text-primary dark:text-white text-center mb-14"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

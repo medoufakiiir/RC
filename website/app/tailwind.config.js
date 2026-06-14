@@ -65,6 +65,7 @@ module.exports = {
           base: 'hsl(var(--bg-base))',
         },
         surface: {
+          DEFAULT: 'hsl(var(--surface))',
           white: 'hsl(var(--surface))',
         },
         text: {
@@ -83,16 +84,16 @@ module.exports = {
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-        card: "0px 8px 24px rgba(51, 85, 238, 0.08)",
-        "card-hover": "0px 12px 32px rgba(51, 85, 238, 0.16)",
-        button: "0px 4px 14px rgba(51, 85, 238, 0.30)",
+        card: "0px 10px 28px rgba(51, 85, 238, 0.10)",
+        "card-hover": "0px 16px 40px rgba(51, 85, 238, 0.18)",
+        button: "0px 0px 0px rgba(0,0,0,0), 0px 6px 22px rgba(51, 85, 238, 0.40)",
       },
+
       fontFamily: {
         display: ['DXLactos', 'sans-serif'],
-
-        body: ['DXLactos', 'sans-serif'],
-        arabic: ['"Noto Kufi Arabic"', 'sans-serif'],
-
+        sans: ['Nunito', 'system-ui', 'sans-serif'],
+        body: ['Nunito', 'system-ui', 'sans-serif'],
+        arabic: ['Tajawal', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {

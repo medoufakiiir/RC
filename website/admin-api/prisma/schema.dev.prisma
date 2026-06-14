@@ -1,0 +1,146 @@
+// LOCAL DEV ONLY — do not commit changes to this file as the production schema
+// Production uses schema.prisma (PostgreSQL on Railway/Aiven)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  ref        String   @unique
+  parentName String
+  childName  String
+  childAge   String
+  phone      String
+  email      String   @default("")
+  service    String
+  package    String   @default("")
+  date       String
+  time       String
+  notes      String   @default("")
+  status     String   @default("pending")
+  adminNotes String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String   @default("")
+  service   String   @default("")
+  childAge  String   @default("")
+  concern   String   @default("")
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Service {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  titleEn   String
+  titleAr   String
+  descEn    String   @default("")
+  descAr    String   @default("")
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Package {
+  id         String   @id @default(cuid())
+  nameEn     String
+  nameAr     String
+  price      Float
+  currency   String   @default("SAR")
+  period     String   @default("monthly")
+  featuresEn String   @default("")
+  featuresAr String   @default("")
+  isPopular  Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  nameEn    String
+  nameAr    String
+  roleEn    String
+  roleAr    String
+  bio       String   @default("")
+  initials  String
+  color     String   @default("#3355EE")
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
+model ChatbotSession {
+  id         String    @id @default(cuid())
+  sessionId  String    @unique
+  language   String    @default("ar")
+  pageUrl    String    @default("")
+  userAgent  String    @default("")
+  status     String    @default("active")
+  startedAt  DateTime  @default(now())
+  lastSeen   DateTime  @default(now())
+  endedAt    DateTime?
+
+  messages     ChatbotMessage[]
+  appointments ChatbotAppointment[]
+}
+
+model ChatbotMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  session   ChatbotSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+  role      String
+  content   String
+  language  String   @default("ar")
+  createdAt DateTime @default(now())
+}
+
+model ChatbotAppointment {
+  id            String   @id @default(cuid())
+  sessionId     String?
+  session       ChatbotSession? @relation(fields: [sessionId], references: [sessionId], onDelete: SetNull)
+  parentName    String
+  childName     String
+  childAge      String
+  service       String
+  phone         String
+  preferredTime String?
+  notes         String?
+  language      String   @default("ar")
+  status        String   @default("pending")
+  source        String   @default("chatbot")
+  createdAt     DateTime @default(now())
+}

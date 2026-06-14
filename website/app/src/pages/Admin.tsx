@@ -81,7 +81,6 @@ export default function Admin() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
   }, []);
 
   const bookings = useMemo(() => getBookings(), []);
