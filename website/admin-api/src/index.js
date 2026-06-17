@@ -31,16 +31,22 @@ app.use('/chat',            require('./routes/chat'));
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 app.get('/debug-chat', async (_req, res) => {
-  const key = process.env.DEEPSEEK_API_KEY;
-  if (!key) return res.json({ error: 'DEEPSEEK_API_KEY not set' });
+  const gemini = process.env.GEMINI_API_KEY;
+  const deepseek = process.env.DEEPSEEK_API_KEY;
+  if (!gemini && !deepseek) return res.json({ error: 'No AI key set. Add GEMINI_API_KEY or DEEPSEEK_API_KEY' });
+  const url = gemini
+    ? 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
+    : 'https://api.deepseek.com/v1/chat/completions';
+  const key = gemini || deepseek;
+  const model = gemini ? 'gemini-2.0-flash' : 'deepseek-chat';
   try {
-    const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const r = await fetch(url, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: 'Say hi' }], max_tokens: 20 }),
+      body: JSON.stringify({ model, messages: [{ role: 'user', content: 'Say hi in one word' }], max_tokens: 20 }),
     });
     const data = await r.json();
-    res.json({ status: r.status, data });
+    res.json({ provider: gemini ? 'gemini' : 'deepseek', status: r.status, data });
   } catch (e) {
     res.json({ error: e.message });
   }
