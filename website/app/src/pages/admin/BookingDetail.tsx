@@ -47,7 +47,6 @@ export default function BookingDetail() {
     ['Phone',       booking.phone],
     ['Email',       booking.email || '—'],
     ['Service',     booking.service],
-    ['Package',     booking.package || '—'],
     ['Date',        booking.date],
     ['Time',        booking.time],
     ['Notes',       booking.notes || '—'],

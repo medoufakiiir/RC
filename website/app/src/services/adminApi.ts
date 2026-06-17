@@ -41,13 +41,9 @@ export const adminApi = {
 
   // Services
   services: () => req<Service[]>('GET', '/admin/services'),
+  createService: (data: Omit<Service, 'id'>) => req<Service>('POST', '/admin/services', data),
   updateService: (id: string, data: Partial<Service>) => req<Service>('PATCH', `/admin/services/${id}`, data),
-
-  // Packages
-  packages: () => req<Package[]>('GET', '/admin/packages'),
-  createPackage: (data: Omit<Package, 'id' | 'createdAt' | 'updatedAt'>) => req<Package>('POST', '/admin/packages', data),
-  updatePackage: (id: string, data: Partial<Package>) => req<Package>('PATCH', `/admin/packages/${id}`, data),
-  deletePackage: (id: string) => req('DELETE', `/admin/packages/${id}`),
+  deleteService: (id: string) => req('DELETE', `/admin/services/${id}`),
 
   // Team
   team: () => req<TeamMember[]>('GET', '/admin/team'),
@@ -80,7 +76,7 @@ export interface AdminUser { id: string; email: string; name: string; role: stri
 
 export interface Booking {
   id: string; ref: string; parentName: string; childName: string; childAge: string;
-  phone: string; email: string; service: string; package: string;
+  phone: string; email: string; service: string;
   date: string; time: string; notes: string; status: string; adminNotes: string;
   createdAt: string; updatedAt: string;
 }
@@ -93,13 +89,6 @@ export interface ContactMessage {
 export interface Service {
   id: string; slug: string; titleEn: string; titleAr: string;
   descEn: string; descAr: string; isActive: boolean; order: number;
-}
-
-export interface Package {
-  id: string; nameEn: string; nameAr: string; price: number; currency: string;
-  period: string; featuresEn: string; featuresAr: string;
-  isPopular: boolean; isActive: boolean; order: number;
-  createdAt: string; updatedAt: string;
 }
 
 export interface TeamMember {

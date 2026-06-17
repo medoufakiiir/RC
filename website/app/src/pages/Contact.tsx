@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import { addContactMessage } from '../lib/contactStore';
 import { submitContact } from '../services/adminApi';
 import { useLanguage } from '../LanguageProvider';
+import { GlowCard } from '@/components/ui/spotlight-card';
 
 const serviceOptions = [
   { value: 'Assessment', labelAR: 'التقييم' },
@@ -325,14 +326,18 @@ export default function Contact() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-[2rem] bg-white/5 p-6 ring-1 ring-white/10">
-                  <p className="text-sm font-semibold text-white mb-2">{t('contact.fastResponse')}</p>
-                  <p className="text-xs text-white/60">{t('contact.fastResponseSub')}</p>
-                </div>
-                <div className="rounded-[2rem] bg-white/5 p-6 ring-1 ring-white/10">
-                  <p className="text-sm font-semibold text-white mb-2">{t('contact.expertTeam')}</p>
-                  <p className="text-xs text-white/60">{t('contact.expertTeamSub')}</p>
-                </div>
+                <GlowCard customSize glowColor="blue" className="w-full">
+                  <div className="p-6">
+                    <p className="text-sm font-semibold text-white mb-2">{t('contact.fastResponse')}</p>
+                    <p className="text-xs text-white/60">{t('contact.fastResponseSub')}</p>
+                  </div>
+                </GlowCard>
+                <GlowCard customSize glowColor="purple" className="w-full">
+                  <div className="p-6">
+                    <p className="text-sm font-semibold text-white mb-2">{t('contact.expertTeam')}</p>
+                    <p className="text-xs text-white/60">{t('contact.expertTeamSub')}</p>
+                  </div>
+                </GlowCard>
               </div>
             </motion.aside>
           </div>

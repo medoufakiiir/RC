@@ -118,7 +118,6 @@ export default function Footer() {
               {[
                 { label: t('nav.home'),        href: '/' },
                 { label: t('nav.services'),    href: '/services' },
-                { label: t('nav.packages'),    href: '/packages' },
                 { label: t('footer.about'),    href: '/about' },
                 { label: t('footer.contactUs'),href: '/contact' },
                 { label: t('footer.bookSession'), href: '/booking' },

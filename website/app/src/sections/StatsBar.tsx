@@ -2,9 +2,9 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '../LanguageProvider';
 
 const stats = [
-  { number: '4', label: 'statsBar.services' },
+  { number: 'statsBar.servicesCount', label: 'statsBar.services' },
   { number: '3-12', label: 'statsBar.ages' },
-  { number: '6', label: 'statsBar.workingDays' },
+  { number: '5', label: 'statsBar.workingDays' },
   // Location headline changes based on Arabic/English (Riyadh السعودية)
   { number: 'statsBar.city', label: 'statsBar.location' },
 ];

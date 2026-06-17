@@ -1,5 +1,6 @@
 const express = require('express');
 const prisma = require('../db');
+const { bookingEmail, contactEmail } = require('../email');
 
 const router = express.Router();
 
@@ -19,6 +20,9 @@ router.post('/bookings', async (req, res) => {
   const booking = await prisma.booking.create({
     data: { ref, parentName, childName, childAge: childAge || '', phone, email: email || '', service, package: pkg || '', date, time, notes: notes || '' },
   });
+
+  bookingEmail(booking).catch(() => {});
+
   res.status(201).json({ booking, ref: booking.ref });
 });
 
@@ -31,6 +35,9 @@ router.post('/contact', async (req, res) => {
   const msg = await prisma.contactMessage.create({
     data: { name, email, phone: phone || '', service: service || '', childAge: childAge || '', concern: concern || '', message },
   });
+
+  contactEmail(msg).catch(() => {});
+
   res.status(201).json({ message: msg });
 });
 

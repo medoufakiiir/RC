@@ -70,8 +70,8 @@ const faqs: ServiceFaq[] = [
   {
     q: 'How do I know if my child needs occupational therapy?',
     qAR: 'كيف أعرف إن كان طفلي بحاجة إلى علاج وظيفي؟',
-    a: 'Signs include difficulty with handwriting, dressing, using utensils, avoiding tactile activities, or appearing clumsy. A free consultation can help determine whether OT is the right fit.',
-    aAR: 'تشمل العلامات صعوبة الكتابة أو ارتداء الملابس أو استخدام الأدوات، وتجنب الأنشطة اللمسية، أو الحركة غير المنسجمة. استشارة مجانية تساعد في تحديد ما إذا كان العلاج الوظيفي مناسبًا.',
+    a: 'Signs include difficulty with handwriting, dressing, using utensils, avoiding tactile activities, or appearing clumsy. A consultation can help determine whether OT is the right fit.',
+    aAR: 'تشمل العلامات صعوبة الكتابة أو ارتداء الملابس أو استخدام الأدوات، وتجنب الأنشطة اللمسية، أو الحركة غير المنسجمة. استشارة تساعد في تحديد ما إذا كان العلاج الوظيفي مناسبًا.',
   },
   {
     q: 'What are sensory processing difficulties?',

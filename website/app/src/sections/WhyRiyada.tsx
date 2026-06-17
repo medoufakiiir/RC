@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion';
 import { Heart, Users, Award, Clock, Shield, Sparkles } from 'lucide-react';
 import { useLanguage } from '../LanguageProvider';
+import { GlowCard } from '@/components/ui/spotlight-card';
 
 const benefits = [
   {
     icon: Heart,
     color: '#FF4D94',
+    glowColor: 'red' as const,
     title: 'Child-Centered Care',
     titleAR: 'رعاية تركز على الطفل',
     description: 'Every program is tailored to your child\'s unique personality, strengths, and goals.',
@@ -14,14 +16,16 @@ const benefits = [
   {
     icon: Users,
     color: '#3355EE',
+    glowColor: 'blue' as const,
     title: 'Expert Team',
     titleAR: 'فريق خبير',
     description: 'Licensed therapists with specialized training in pediatric development.',
-    descriptionAR: 'معالِجون مرخَّصون مدرَّبون تدريبًا متخصصًا في تنمية الأطفال.',
+    descriptionAR: 'معالِجون مرخَّصون مدرَّبون تدريبًا متخصصًا في تنمية الأطفال.',
   },
   {
     icon: Award,
     color: '#FFCC22',
+    glowColor: 'orange' as const,
     title: 'Proven Methods',
     titleAR: 'طرق مثبتة',
     description: 'Evidence-based therapeutic approaches backed by research and results.',
@@ -30,6 +34,7 @@ const benefits = [
   {
     icon: Clock,
     color: '#33CC44',
+    glowColor: 'green' as const,
     title: 'Flexible Scheduling',
     titleAR: 'جدولة مرنة',
     description: 'Sessions available Sunday through Thursday with convenient time slots.',
@@ -38,6 +43,7 @@ const benefits = [
   {
     icon: Shield,
     color: '#7766DD',
+    glowColor: 'purple' as const,
     title: 'Safe Environment',
     titleAR: 'بيئة آمنة',
     description: 'A nurturing, sensory-friendly space designed for children\'s comfort.',
@@ -46,6 +52,7 @@ const benefits = [
   {
     icon: Sparkles,
     color: '#FF4D94',
+    glowColor: 'red' as const,
     title: 'Holistic Approach',
     titleAR: 'نهج شامل',
     description: 'We address the whole child — cognitive, physical, emotional, and social.',
@@ -56,7 +63,7 @@ const benefits = [
 export default function WhyRiyada() {
   const { locale, t } = useLanguage();
   return (
-    <section className="py-24 bg-gray-50 dark:bg-brand-blue relative overflow-hidden">
+    <section className="py-24 bg-brand-blue relative overflow-hidden">
       {/* Decorative skill builder peek */}
       <div className="absolute -bottom-8 -right-8 opacity-10">
         <img
@@ -68,7 +75,7 @@ export default function WhyRiyada() {
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <motion.h2
-          className="font-display font-bold text-3xl md:text-4xl text-text-primary dark:text-white text-center mb-14"
+          className="font-display font-bold text-3xl md:text-4xl text-white text-center mb-14"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -80,24 +87,28 @@ export default function WhyRiyada() {
           {benefits.map((benefit, i) => (
             <motion.div
               key={benefit.title}
-              className="bg-card rounded-card p-6 shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border border-border"
+              className="flex flex-col"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
             >
-              <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-                style={{ backgroundColor: benefit.color + '15' }}
-              >
-                <benefit.icon size={24} style={{ color: benefit.color }} />
-              </div>
-              <h3 className="font-display font-bold text-lg text-text-primary mb-2">
-                {locale === 'ar' ? benefit.titleAR : benefit.title}
-              </h3>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                {locale === 'ar' ? benefit.descriptionAR : benefit.description}
-              </p>
+              <GlowCard customSize glowColor={benefit.glowColor} backdropColor="var(--why-card-backdrop)" className="w-full flex-1">
+                <div className="p-6 flex flex-col">
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+                    style={{ backgroundColor: benefit.color + '30' }}
+                  >
+                    <benefit.icon size={24} style={{ color: benefit.color }} />
+                  </div>
+                  <h3 className="font-display font-bold text-lg text-gray-900 dark:text-white mb-2">
+                    {locale === 'ar' ? benefit.titleAR : benefit.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-white/70 text-sm leading-relaxed">
+                    {locale === 'ar' ? benefit.descriptionAR : benefit.description}
+                  </p>
+                </div>
+              </GlowCard>
             </motion.div>
           ))}
         </div>

@@ -4,6 +4,7 @@ import { Target, Heart, Lightbulb, ArrowRight, MapPin, Phone, Mail } from 'lucid
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useLanguage } from '../LanguageProvider';
+import { GlowCard } from '@/components/ui/spotlight-card';
 
 const values = [
   {
@@ -13,7 +14,7 @@ const values = [
     description: 'To be the leading pediatric development center in the region, where every child discovers their potential and every family finds support.',
     descriptionAR: 'أن نكون المركز الرائد لتطوير الأطفال في المنطقة، حيث يكتشف كل طفل إمكاناته وتجد كل أسرة الدعم الذي تحتاجه.',
     color: '#FFCC22',
-    bg: '#FEF7CD',
+    glowColor: 'orange' as const,
   },
   {
     icon: Heart,
@@ -22,7 +23,7 @@ const values = [
     description: 'To provide exceptional, evidence-based therapeutic services that nurture each child\'s unique abilities in a warm, inclusive environment.',
     descriptionAR: 'تقديم خدمات علاجية استثنائية ومبنية على الدليل العلمي تُنمّي القدرات الفريدة لكل طفل في بيئة دافئة وشاملة.',
     color: '#FF4D94',
-    bg: '#FFDEF6',
+    glowColor: 'red' as const,
   },
   {
     icon: Lightbulb,
@@ -31,7 +32,7 @@ const values = [
     description: 'Compassion, excellence, innovation, and family-centered care guide every decision we make and every interaction we have.',
     descriptionAR: 'الرحمة والتميز والابتكار ورعاية الأسرة تقود كل قرار نتخذه وكل تفاعل نقوم به.',
     color: '#33CC44',
-    bg: '#CFFFD9',
+    glowColor: 'green' as const,
   },
 ];
 
@@ -189,31 +190,28 @@ export default function About() {
             {values.map((item, i) => (
               <motion.div
                 key={item.title}
-                className="rounded-card p-8 transition-all duration-300 hover:-translate-y-1"
-                style={{ backgroundColor: item.bg }}
+                className="flex flex-col"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.15, duration: 0.5 }}
               >
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-                  style={{ backgroundColor: item.color + '20' }}
-                >
-                  <item.icon size={26} style={{ color: item.color }} />
-                </div>
-                <h3
-                  className="font-display font-bold text-lg mb-3"
-                  style={{ color: item.color === '#FFCC22' ? '#5C3D00' : item.color === '#FF4D94' ? '#6B0F3A' : '#0F4D2A' }}
-                >
-                  {locale === 'ar' ? item.titleAR : item.title}
-                </h3>
-                <p
-                  className="font-sans text-sm leading-relaxed"
-                  style={{ color: item.color === '#FFCC22' ? '#5C3D00' : item.color === '#FF4D94' ? '#6B0F3A' : '#0F4D2A', opacity: 0.85 }}
-                >
-                  {locale === 'ar' ? item.descriptionAR : item.description}
-                </p>
+                <GlowCard customSize glowColor={item.glowColor} className="w-full flex-1">
+                  <div className="p-8 flex flex-col">
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+                      style={{ backgroundColor: item.color + '25' }}
+                    >
+                      <item.icon size={26} style={{ color: item.color }} />
+                    </div>
+                    <h3 className="font-display font-bold text-lg text-text-primary mb-3">
+                      {locale === 'ar' ? item.titleAR : item.title}
+                    </h3>
+                    <p className="font-sans text-sm leading-relaxed text-text-secondary">
+                      {locale === 'ar' ? item.descriptionAR : item.description}
+                    </p>
+                  </div>
+                </GlowCard>
               </motion.div>
             ))}
           </div>
@@ -302,26 +300,44 @@ export default function About() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div className="flex flex-col items-center gap-3">
+            <motion.div
+              className="flex flex-col items-center gap-3"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0, duration: 0.5 }}
+            >
               <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                 <MapPin size={20} className="text-brand-blue" />
               </div>
               <span className="text-sm text-white/70" dir="ltr">
                 Makkah Al Mukarramah Road, Al Sulaymaniyah District, Riyadh, Saudi Arabia
               </span>
-            </div>
-            <div className="flex flex-col items-center gap-3">
+            </motion.div>
+            <motion.div
+              className="flex flex-col items-center gap-3"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+            >
               <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                 <Phone size={20} className="text-brand-green" />
               </div>
               <span className="text-sm text-white/70" dir="ltr">+966 555 019 224</span>
-            </div>
-            <div className="flex flex-col items-center gap-3">
+            </motion.div>
+            <motion.div
+              className="flex flex-col items-center gap-3"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
               <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                 <Mail size={20} className="text-brand-pink" />
               </div>
               <span className="text-sm text-white/70">RC@riyada-ventures.com</span>
-            </div>
+            </motion.div>
           </div>
 
           <Link

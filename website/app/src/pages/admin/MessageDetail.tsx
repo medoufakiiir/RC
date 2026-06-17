@@ -10,7 +10,11 @@ export default function MessageDetail() {
   const [msg, setMsg] = useState<ContactMessage | null>(null);
 
   useEffect(() => {
-    if (id) adminApi.message(id).then(setMsg);
+    if (!id) return;
+    adminApi.message(id).then(m => {
+      setMsg(m);
+      if (!m.isRead) adminApi.updateMessage(id, { isRead: true }).then(setMsg).catch(() => {});
+    });
   }, [id]);
 
   async function del() {

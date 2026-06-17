@@ -70,54 +70,6 @@ const timeSlots = [
   '12:00 PM', '1:00 PM', '1:45 PM', '2:30 PM', '3:15 PM',
 ];
 
-const packages = [
-  {
-    id: 'individual',
-    name: 'Individual Sessions',
-    nameAR: 'جلسات فردية',
-    description: 'Pay-as-you-go therapy at SAR 350/hour',
-    descriptionAR: 'علاج حسب الحاجة بـ ٣٥٠ ريال/ساعة',
-    price: '350 SAR/hr',
-    priceAR: '٣٥٠ ريال/ساعة',
-  },
-  {
-    id: 'package-a',
-    name: 'Package A',
-    nameAR: 'الباقة A',
-    description: '5 hours/week — 6,650 SAR per month',
-    descriptionAR: '٥ ساعات/أسبوع — ٦٬٦٥٠ ريال شهريًا',
-    price: '6,650 SAR/mo',
-    priceAR: '٦٬٦٥٠ ريال/شهر',
-  },
-  {
-    id: 'package-b',
-    name: 'Package B',
-    nameAR: 'الباقة B',
-    description: '10 hours/week — 12,600 SAR per month',
-    descriptionAR: '١٠ ساعات/أسبوع — ١٢٬٦٠٠ ريال شهريًا',
-    price: '12,600 SAR/mo',
-    priceAR: '١٢٬٦٠٠ ريال/شهر',
-  },
-  {
-    id: 'package-c',
-    name: 'Package C',
-    nameAR: 'الباقة C',
-    description: '15 hours/week — 17,850 SAR per month',
-    descriptionAR: '١٥ ساعة/أسبوع — ١٧٬٨٥٠ ريال شهريًا',
-    price: '17,850 SAR/mo',
-    priceAR: '١٧٬٨٥٠ ريال/شهر',
-  },
-  {
-    id: 'intensive',
-    name: 'Intensive Package',
-    nameAR: 'الباقة المكثفة',
-    description: '30 hours/week — 29,400 SAR per month',
-    descriptionAR: '٣٠ ساعة/أسبوع — ٢٩٬٤٠٠ ريال شهريًا',
-    price: '29,400 SAR/mo',
-    priceAR: '٢٩٬٤٠٠ ريال/شهر',
-  },
-];
-
 export default function Booking() {
   const { locale, t } = useLanguage();
   const isRTL = locale === 'ar';
@@ -132,7 +84,6 @@ export default function Booking() {
 
   const [step, setStep] = useState(0);
   const [selectedService, setSelectedService] = useState<string | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -163,7 +114,6 @@ export default function Booking() {
       if (!selectedService || !selectedDate || !selectedTime) return;
 
       const serviceTitle = services.find((s) => s.id === selectedService)?.title ?? '';
-      const packageName  = packages.find((pkg) => pkg.id === selectedPackage)?.name ?? '';
 
       let ref: string;
       try {
@@ -173,7 +123,6 @@ export default function Booking() {
           childAge:   formData.age,
           phone:      formData.phone,
           service:    serviceTitle,
-          package:    packageName,
           date:       selectedDate,
           time:       selectedTime,
           notes:      formData.notes,
@@ -183,7 +132,6 @@ export default function Booking() {
         const booking = addBooking({
           patient: formData.childName,
           service: serviceTitle,
-          package: packageName,
           date:    selectedDate,
           time:    selectedTime,
           status:  'Confirmed',
@@ -206,7 +154,7 @@ export default function Booking() {
 
   const canProceed = () => {
     switch (step) {
-      case 0: return selectedService !== null && selectedPackage !== null;
+      case 0: return selectedService !== null;
       case 1: return formData.childName && formData.age && formData.parentName && formData.phone;
       case 2: return selectedDate !== null;
       case 3: return selectedTime !== null;
@@ -269,14 +217,6 @@ export default function Booking() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">{t('booking.package')}</span>
-                  <span className="font-medium">
-                    {isRTL
-                      ? packages.find(pkg => pkg.id === selectedPackage)?.nameAR
-                      : packages.find(pkg => pkg.id === selectedPackage)?.name ?? '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-text-secondary">{t('booking.parent')}</span>
                   <span className="font-medium">{formData.parentName}</span>
                 </div>
@@ -301,7 +241,6 @@ export default function Booking() {
 
             <div className="flex flex-wrap justify-center gap-3">
               <Link to="/" className="btn-primary">{t('booking.backHome')}</Link>
-              <Link to="/packages" className="btn-secondary">{t('booking.viewPackages')}</Link>
             </div>
 
             {/* Confetti dots */}
@@ -418,39 +357,6 @@ export default function Booking() {
                     ))}
                   </div>
 
-                  <div className="mt-10">
-                    <h3 className="font-display font-semibold text-lg text-text-primary mb-4">
-                      {t('booking.choosePackage')}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {packages.map((pkg) => (
-                        <button
-                          key={pkg.id}
-                          type="button"
-                          onClick={() => setSelectedPackage(pkg.id)}
-                          className={`group w-full rounded-3xl border p-5 text-left transition-all duration-200 ${
-                            selectedPackage === pkg.id
-                              ? 'border-brand-blue bg-brand-blue/10 shadow-lg'
-                              : 'border-border bg-surface hover:border-brand-blue'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <h4 className="font-semibold text-text-primary">
-                                {isRTL ? pkg.nameAR : pkg.name}
-                              </h4>
-                              <p className="text-sm text-text-secondary mt-1">
-                                {isRTL ? pkg.descriptionAR : pkg.description}
-                              </p>
-                            </div>
-                            <span className="text-sm font-semibold text-brand-blue shrink-0">
-                              {isRTL ? pkg.priceAR : pkg.price}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </motion.div>
               )}
 

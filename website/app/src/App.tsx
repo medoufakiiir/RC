@@ -6,7 +6,6 @@ import AssessmentsPage from './pages/AssessmentsPage';
 import ABATherapyPage from './pages/ABATherapyPage';
 import OccupationalTherapyPage from './pages/OccupationalTherapyPage';
 import Booking from './pages/Booking';
-import Packages from './pages/Packages';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import TermsPage from './pages/TermsPage';
@@ -27,7 +26,6 @@ import BookingDetail from './pages/admin/BookingDetail';
 import Messages from './pages/admin/Messages';
 import MessageDetail from './pages/admin/MessageDetail';
 import ServicesAdmin from './pages/admin/ServicesAdmin';
-import PackagesAdmin from './pages/admin/PackagesAdmin';
 import TeamAdmin from './pages/admin/TeamAdmin';
 import AdminSettings from './pages/admin/AdminSettings';
 import ChatbotAdmin from './pages/admin/Chatbot';
@@ -54,7 +52,6 @@ export default function App() {
           <Route path="/services/speech-language" element={<ServicesDetail />} />
           <Route path="/services/occupational-therapy" element={<OccupationalTherapyPage />} />
           <Route path="/booking" element={<Booking />} />
-          <Route path="/packages" element={<Packages />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<TermsPage />} />
@@ -72,7 +69,6 @@ export default function App() {
             <Route path="messages" element={<Messages />} />
             <Route path="messages/:id" element={<MessageDetail />} />
             <Route path="services" element={<ServicesAdmin />} />
-            <Route path="packages" element={<PackagesAdmin />} />
             <Route path="team" element={<TeamAdmin />} />
             <Route path="chatbot"  element={<ChatbotAdmin />} />
             <Route path="settings" element={<AdminSettings />} />

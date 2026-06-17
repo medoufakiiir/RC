@@ -6,6 +6,9 @@ import type { CSSProperties, ReactNode } from 'react';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
 import { useLanguage } from '../../LanguageProvider';
+import { GlowCard } from '@/components/ui/spotlight-card';
+
+const stepGlowColors = ['blue', 'purple', 'green', 'orange'] as const;
 
 export interface ServiceStep {
   number: string;
@@ -106,7 +109,7 @@ export default function ServicePageTemplate({
               </p>
               <Link to="/booking" className="btn-primary inline-flex items-center gap-2">
                 <Calendar size={18} />
-                {isAR ? 'احجز استشارة مجانية' : 'Book a Free Consultation'}
+                {isAR ? 'احجز استشارة' : 'Book a Consultation'}
               </Link>
             </motion.div>
           </div>
@@ -217,30 +220,34 @@ export default function ServicePageTemplate({
                 return (
                   <motion.div
                     key={step.number}
-                    className="relative bg-card rounded-card p-6 shadow-card hover:shadow-card-hover transition-all duration-300"
+                    className="flex flex-col"
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.15, duration: 0.5 }}
                   >
-                    <div
-                      className="font-display font-black text-5xl mb-4"
-                      style={{ color: step.color, opacity: 0.2 }}
-                    >
-                      {step.number}
-                    </div>
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                      style={{ backgroundColor: step.color + '15' }}
-                    >
-                      <StepIcon size={20} style={{ color: step.color }} />
-                    </div>
-                    <h3 className="font-display font-bold text-lg text-text-primary mb-2">
-                      {isAR ? step.titleAR : step.title}
-                    </h3>
-                    <p className="text-text-secondary text-sm leading-relaxed">
-                      {isAR ? step.descriptionAR : step.description}
-                    </p>
+                    <GlowCard customSize glowColor={stepGlowColors[i % stepGlowColors.length]} className="w-full flex-1">
+                      <div className="p-6 flex flex-col">
+                        <div
+                          className="font-display font-black text-5xl mb-4"
+                          style={{ color: step.color, opacity: 0.2 }}
+                        >
+                          {step.number}
+                        </div>
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                          style={{ backgroundColor: step.color + '15' }}
+                        >
+                          <StepIcon size={20} style={{ color: step.color }} />
+                        </div>
+                        <h3 className="font-display font-bold text-lg text-text-primary mb-2">
+                          {isAR ? step.titleAR : step.title}
+                        </h3>
+                        <p className="text-text-secondary text-sm leading-relaxed">
+                          {isAR ? step.descriptionAR : step.description}
+                        </p>
+                      </div>
+                    </GlowCard>
                   </motion.div>
                 );
               })}
@@ -317,7 +324,7 @@ export default function ServicePageTemplate({
               className="inline-flex items-center gap-2 px-8 py-4 bg-white text-brand-blue font-bold rounded-pill shadow-lg hover:scale-105 transition-transform duration-200"
             >
               <Calendar size={20} />
-              {isAR ? 'احجز استشارة مجانية' : 'Book a Free Consultation'}
+              {isAR ? 'احجز استشارة' : 'Book a Consultation'}
               <ArrowRight size={18} className="rtl:rotate-180" />
             </Link>
           </motion.div>
