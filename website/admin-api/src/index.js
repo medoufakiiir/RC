@@ -30,6 +30,22 @@ app.use('/chat',            require('./routes/chat'));
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
+app.get('/debug-chat', async (_req, res) => {
+  const key = process.env.DEEPSEEK_API_KEY;
+  if (!key) return res.json({ error: 'DEEPSEEK_API_KEY not set' });
+  try {
+    const r = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: 'Say hi' }], max_tokens: 20 }),
+    });
+    const data = await r.json();
+    res.json({ status: r.status, data });
+  } catch (e) {
+    res.json({ error: e.message });
+  }
+});
+
 // Email test endpoint
 app.get('/test-email', async (_req, res) => {
   const { bookingEmail } = require('./email');
