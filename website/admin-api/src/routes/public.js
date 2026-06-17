@@ -8,6 +8,16 @@ function genRef() {
   return 'RYD-' + Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 
+// GET /services (public — returns active services)
+router.get('/services', async (_req, res) => {
+  const services = await prisma.service.findMany({
+    where: { isActive: true },
+    orderBy: { order: 'asc' },
+    select: { slug: true, titleEn: true, titleAr: true, descEn: true, descAr: true, order: true },
+  });
+  res.json(services);
+});
+
 // POST /bookings
 router.post('/bookings', async (req, res) => {
   const { parentName, childName, childAge, phone, email, service, package: pkg, date, time, notes } = req.body;

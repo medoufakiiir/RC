@@ -19,12 +19,12 @@ import Footer from '../components/Footer';
 import { addBooking } from '../lib/bookingsStore';
 import { submitBooking } from '../services/adminApi';
 import { useLanguage } from '../LanguageProvider';
+import { useActiveServices } from '../hooks/useActiveServices';
 
-
-
-const services = [
+const allServices = [
   {
     id: 'assessment',
+    slug: 'assessments',
     title: 'Assessment',
     titleAR: 'التقييم',
     description: 'Initial evaluation and consultation',
@@ -35,6 +35,7 @@ const services = [
   },
   {
     id: 'aba',
+    slug: 'aba-therapy',
     title: 'ABA Therapy',
     titleAR: 'علاج ABA',
     description: 'Behavior therapy and support',
@@ -45,6 +46,7 @@ const services = [
   },
   {
     id: 'speech',
+    slug: 'speech-language',
     title: 'Speech Therapy',
     titleAR: 'علاج النطق',
     description: 'Language and communication',
@@ -55,6 +57,7 @@ const services = [
   },
   {
     id: 'ot',
+    slug: 'occupational-therapy',
     title: 'Occupational Therapy',
     titleAR: 'العلاج الوظيفي',
     description: 'Motor skills and sensory integration',
@@ -73,6 +76,10 @@ const timeSlots = [
 export default function Booking() {
   const { locale, t } = useLanguage();
   const isRTL = locale === 'ar';
+  const { slugs, loaded } = useActiveServices();
+  const services = loaded && slugs.length > 0
+    ? allServices.filter(s => slugs.includes(s.slug))
+    : allServices;
 
   const steps = [
     { label: t('booking.stepService') },

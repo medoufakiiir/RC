@@ -5,8 +5,9 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useLanguage } from '../LanguageProvider';
 import { GlowCard } from '@/components/ui/spotlight-card';
+import { useActiveServices } from '../hooks/useActiveServices';
 
-const services = [
+const allServices = [
   {
     title: 'Assessments & Consultations',
     titleAR: 'التقييمات والاستشارات',
@@ -103,6 +104,10 @@ const services = [
 
 export default function ServicesPage() {
   const { locale } = useLanguage();
+  const { slugs, loaded } = useActiveServices();
+  const services = loaded && slugs.length > 0
+    ? allServices.filter(s => slugs.some(slug => s.href.includes(slug)))
+    : allServices;
 
 
   return (

@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ClipboardList, MessageCircle, Brain, Hand } from 'lucide-react';
 import { useLanguage } from '../LanguageProvider';
 import { GlowCard } from '@/components/ui/spotlight-card';
+import { useActiveServices } from '../hooks/useActiveServices';
 
-const services = [
+const allServices = [
   {
     title: 'Assessments & Consultations',
     titleAR: 'التقييمات والاستشارات',
@@ -53,6 +54,10 @@ const services = [
 
 export default function ServicesSection() {
   const { locale, t } = useLanguage();
+  const { slugs, loaded } = useActiveServices();
+  const services = loaded && slugs.length > 0
+    ? allServices.filter(s => slugs.some(slug => s.href.includes(slug)))
+    : allServices;
   return (
     <section className="py-24 bg-bg-base relative">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
