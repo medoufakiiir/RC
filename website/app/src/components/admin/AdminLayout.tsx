@@ -23,7 +23,7 @@ export default function AdminLayout() {
   const [notif,     setNotif]     = useState({ messages: 0, bookings: 0 });
   const [notifOpen, setNotifOpen] = useState(false);
   const navigate  = useNavigate();
-  const timerRef  = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef  = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const notifRef  = useRef<HTMLDivElement>(null);
 
   // 10-minute auto-logout on idle
