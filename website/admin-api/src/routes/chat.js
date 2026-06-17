@@ -1,28 +1,33 @@
 const express = require('express');
-const Anthropic = require('@anthropic-ai/sdk');
 const prisma = require('../db');
 const { getSystemPrompt } = require('../chatbot/system-prompt');
 
 const router = express.Router();
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
+const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
+const MODEL = 'deepseek-chat';
 
 const tools = [
   {
-    name: 'book_appointment',
-    description: 'Save appointment request when ALL required info is collected.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        parent_name:    { type: 'string', description: 'Full name of parent/guardian' },
-        child_name:     { type: 'string', description: 'Name of the child' },
-        child_age:      { type: 'string', description: 'Age of the child' },
-        service:        { type: 'string', description: 'Therapy service interested in' },
-        phone:          { type: 'string', description: 'Contact phone/WhatsApp number' },
-        preferred_time: { type: 'string', description: 'Preferred appointment time/days' },
-        notes:          { type: 'string', description: 'Additional notes or concerns' },
-        language:       { type: 'string', enum: ['ar', 'en'], description: 'Conversation language' },
+    type: 'function',
+    function: {
+      name: 'book_appointment',
+      description: 'Save appointment request when ALL required info is collected.',
+      parameters: {
+        type: 'object',
+        properties: {
+          parent_name:    { type: 'string', description: 'Full name of parent/guardian' },
+          child_name:     { type: 'string', description: 'Name of the child' },
+          child_age:      { type: 'string', description: 'Age of the child' },
+          service:        { type: 'string', description: 'Therapy service interested in' },
+          phone:          { type: 'string', description: 'Contact phone/WhatsApp number' },
+          preferred_time: { type: 'string', description: 'Preferred appointment time/days' },
+          notes:          { type: 'string', description: 'Additional notes or concerns' },
+          language:       { type: 'string', enum: ['ar', 'en'], description: 'Conversation language' },
+        },
+        required: ['parent_name', 'child_name', 'child_age', 'service', 'phone'],
       },
-      required: ['parent_name', 'child_name', 'child_age', 'service', 'phone'],
     },
   },
 ];
@@ -46,23 +51,16 @@ async function upsertSession({ sessionId, language, pageUrl, userAgent, isNew })
         create: { sessionId, language, pageUrl: pageUrl ?? '', userAgent: userAgent ?? '', status: 'active' },
       });
     } else {
-      await prisma.chatbotSession.update({
-        where: { sessionId },
-        data: { lastSeen: new Date() },
-      }).catch(() => {});
+      await prisma.chatbotSession.update({ where: { sessionId }, data: { lastSeen: new Date() } }).catch(() => {});
     }
-  } catch (e) {
-    console.error('[upsertSession]', e.message);
-  }
+  } catch (e) { console.error('[upsertSession]', e.message); }
 }
 
 async function saveMsg({ sessionId, role, content, language }) {
   if (!sessionId) return;
   try {
     await prisma.chatbotMessage.create({ data: { sessionId, role, content, language } });
-  } catch (e) {
-    console.error('[saveMsg]', e.message);
-  }
+  } catch (e) { console.error('[saveMsg]', e.message); }
 }
 
 async function saveAppointment(data, sessionId) {
@@ -83,10 +81,26 @@ async function saveAppointment(data, sessionId) {
       },
     });
     return true;
-  } catch (e) {
-    console.error('[saveAppointment]', e.message);
-    return false;
+  } catch (e) { console.error('[saveAppointment]', e.message); return false; }
+}
+
+async function callDeepSeek(messages, useTools = true) {
+  const res = await fetch(DEEPSEEK_URL, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${DEEPSEEK_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: MODEL,
+      messages,
+      max_tokens: 1024,
+      ...(useTools && { tools, tool_choice: 'auto' }),
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    console.error('[DeepSeek Error]', res.status, err);
+    throw new Error(`DeepSeek API error: ${res.status}`);
   }
+  return res.json();
 }
 
 router.post('/', async (req, res) => {
@@ -96,62 +110,65 @@ router.post('/', async (req, res) => {
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'Invalid messages' });
     }
+    if (!DEEPSEEK_KEY) {
+      return res.status(500).json({ error: 'Chatbot not configured' });
+    }
 
     const language = detectLanguage(messages);
-
     await upsertSession({ sessionId: session_id, language, pageUrl: page_url, userAgent: user_agent, isNew: is_new_session });
 
     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
-    if (lastUserMsg) {
-      await saveMsg({ sessionId: session_id, role: 'user', content: lastUserMsg.content, language });
+    if (lastUserMsg) await saveMsg({ sessionId: session_id, role: 'user', content: lastUserMsg.content, language });
+
+    // Build DeepSeek messages with system prompt
+    const deepseekMessages = [
+      { role: 'system', content: getSystemPrompt() },
+      ...messages,
+    ];
+
+    const response = await callDeepSeek(deepseekMessages);
+    const choice = response.choices?.[0]?.message;
+
+    if (!choice) {
+      return res.status(500).json({ error: 'No response from AI' });
     }
 
-    const response = await anthropic.messages.create({
-      model:      'claude-sonnet-4-6',
-      max_tokens: 1024,
-      system:     getSystemPrompt(),
-      tools,
-      messages,
-    });
+    // Handle tool calls (appointment booking)
+    if (choice.tool_calls?.length > 0) {
+      const toolCall = choice.tool_calls[0];
+      if (toolCall.function.name === 'book_appointment') {
+        const args = JSON.parse(toolCall.function.arguments);
+        const saved = await saveAppointment(args, session_id);
 
-    // Handle tool use (appointment booking)
-    if (response.stop_reason === 'tool_use') {
-      const toolBlock = response.content.find(b => b.type === 'tool_use');
-      if (toolBlock?.name === 'book_appointment') {
-        const saved = await saveAppointment(toolBlock.input, session_id);
-        const continueResponse = await anthropic.messages.create({
-          model:      'claude-sonnet-4-6',
-          max_tokens: 1024,
-          system:     getSystemPrompt(),
-          tools,
-          messages: [
-            ...messages,
-            { role: 'assistant', content: response.content },
-            {
-              role: 'user',
-              content: [{
-                type:        'tool_result',
-                tool_use_id: toolBlock.id,
-                content:     saved
-                  ? 'Appointment saved successfully.'
-                  : 'Failed to save. Please ask the user to try again or contact us directly.',
-              }],
-            },
-          ],
-        });
+        const followUp = await callDeepSeek([
+          ...deepseekMessages,
+          choice,
+          {
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: saved
+              ? 'Appointment saved successfully.'
+              : 'Failed to save. Please ask the user to try again or contact us directly.',
+          },
+        ], false);
 
-        const replyText = continueResponse.content
-          .filter(b => b.type === 'text').map(b => b.text).join('');
+        const replyText = followUp.choices?.[0]?.message?.content ?? '';
         if (replyText) await saveMsg({ sessionId: session_id, role: 'assistant', content: replyText, language });
 
-        return res.json(continueResponse);
+        // Return in Anthropic-like format for frontend compatibility
+        return res.json({
+          content: [{ type: 'text', text: replyText }],
+        });
       }
     }
 
-    const replyText = response.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const replyText = choice.content ?? '';
     if (replyText) await saveMsg({ sessionId: session_id, role: 'assistant', content: replyText, language });
 
-    res.json(response);
+    // Return in Anthropic-like format for frontend compatibility
+    res.json({
+      content: [{ type: 'text', text: replyText }],
+    });
   } catch (error) {
     console.error('[Chat API Error]', error);
     res.status(500).json({ error: 'Something went wrong.' });
