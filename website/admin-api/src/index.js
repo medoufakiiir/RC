@@ -31,25 +31,20 @@ app.use('/chat',            require('./routes/chat'));
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 app.get('/debug-chat', async (_req, res) => {
+  const groq = process.env.GROQ_API_KEY;
   const gemini = process.env.GEMINI_API_KEY;
   const deepseek = process.env.DEEPSEEK_API_KEY;
-  if (!gemini && !deepseek) return res.json({ error: 'No AI key set. Add GEMINI_API_KEY or DEEPSEEK_API_KEY' });
-  const url = gemini
-    ? 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
-    : 'https://api.deepseek.com/v1/chat/completions';
-  const key = gemini || deepseek;
-  const model = gemini ? 'gemini-2.0-flash' : 'deepseek-chat';
+  let url, key, model, provider;
+  if (groq) { url = 'https://api.groq.com/openai/v1/chat/completions'; key = groq; model = 'llama-3.3-70b-versatile'; provider = 'groq'; }
+  else if (gemini) { url = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'; key = gemini; model = 'gemini-2.0-flash'; provider = 'gemini'; }
+  else if (deepseek) { url = 'https://api.deepseek.com/v1/chat/completions'; key = deepseek; model = 'deepseek-chat'; provider = 'deepseek'; }
+  else return res.json({ error: 'No AI key set. Add GROQ_API_KEY, GEMINI_API_KEY, or DEEPSEEK_API_KEY' });
   try {
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, messages: [{ role: 'user', content: 'Say hi in one word' }], max_tokens: 20 }),
-    });
+    const r = await fetch(url, { method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, messages: [{ role: 'user', content: 'Say hi in one word' }], max_tokens: 20 }) });
     const data = await r.json();
-    res.json({ provider: gemini ? 'gemini' : 'deepseek', status: r.status, data });
-  } catch (e) {
-    res.json({ error: e.message });
-  }
+    res.json({ provider, status: r.status, data });
+  } catch (e) { res.json({ error: e.message }); }
 });
 
 // Email test endpoint

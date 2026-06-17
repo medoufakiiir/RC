@@ -4,17 +4,25 @@ const { getSystemPrompt } = require('../chatbot/system-prompt');
 
 const router = express.Router();
 
-// Auto-detect provider: Gemini (free) takes priority, then DeepSeek
+// Auto-detect provider: Groq (free) → Gemini → DeepSeek
 function getProvider() {
+  if (process.env.GROQ_API_KEY) return {
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    key: process.env.GROQ_API_KEY,
+    model: 'llama-3.3-70b-versatile',
+    name: 'groq',
+  };
   if (process.env.GEMINI_API_KEY) return {
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
     key: process.env.GEMINI_API_KEY,
     model: 'gemini-2.0-flash',
+    name: 'gemini',
   };
   if (process.env.DEEPSEEK_API_KEY) return {
     url: 'https://api.deepseek.com/v1/chat/completions',
     key: process.env.DEEPSEEK_API_KEY,
     model: 'deepseek-chat',
+    name: 'deepseek',
   };
   return null;
 }
