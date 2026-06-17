@@ -3,7 +3,7 @@ const ADMIN_EMAIL  = process.env.ADMIN_EMAIL   || 'admin@riyada.com';
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'noreply@riyada.com';
 const SITE_URL     = process.env.SITE_URL      || 'https://rc.riyada-ventures.com';
 const LOGO_URL     = `${SITE_URL}/logo/Riyada%20Center%20Logo%20Souce-01.png`;
-const ADMIN_URL    = `${SITE_URL}/admin/dashboard`;
+const ADMIN_URL    = `${SITE_URL}/admin`;
 
 function header(title, subtitle, bgColor) {
   return `
