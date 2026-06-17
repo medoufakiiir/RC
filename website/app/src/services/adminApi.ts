@@ -4,6 +4,13 @@ function getToken() {
   return localStorage.getItem('admin_token') ?? '';
 }
 
+export function getStoredAdmin(): AdminUser | null {
+  try {
+    const raw = localStorage.getItem('admin_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
 async function req<T>(method: string, path: string, body?: unknown, auth = true): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (auth) headers['Authorization'] = `Bearer ${getToken()}`;
@@ -20,6 +27,8 @@ export const adminApi = {
   login: (email: string, password: string) =>
     req<{ token: string; user: AdminUser }>('POST', '/auth/login', { email, password }, false),
   me: () => req<AdminUser>('GET', '/auth/me'),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    req('POST', '/auth/change-password', { currentPassword, newPassword }),
 
   // Dashboard
   dashboard: () => req<DashboardData>('GET', '/admin/dashboard'),
@@ -51,11 +60,15 @@ export const adminApi = {
   updateTeamMember: (id: string, data: Partial<TeamMember>) => req<TeamMember>('PATCH', `/admin/team/${id}`, data),
   deleteTeamMember: (id: string) => req('DELETE', `/admin/team/${id}`),
 
+  // Users
+  users: () => req<ManagedUser[]>('GET', '/admin/users'),
+  createUser: (data: { email: string; name: string; role: string; password?: string }) => req<ManagedUser>('POST', '/admin/users', data),
+  updateUser: (id: string, data: Partial<{ name: string; email: string; role: string; isActive: boolean }>) => req<ManagedUser>('PATCH', `/admin/users/${id}`, data),
+  resetPassword: (id: string, password?: string) => req('POST', `/admin/users/${id}/reset-password`, { password }),
+
   // Settings
   settings: () => req<Record<string, string>>('GET', '/admin/settings'),
   updateSettings: (data: Record<string, string>) => req('PATCH', '/admin/settings', data),
-  changePassword: (currentPassword: string, newPassword: string) =>
-    req('POST', '/admin/settings/change-password', { currentPassword, newPassword }),
 };
 
 // Public form submission
@@ -72,7 +85,17 @@ export async function submitContact(data: Record<string, string>) {
 }
 
 // Types
-export interface AdminUser { id: string; email: string; name: string; role: string }
+export type Role = 'SUPER_ADMIN' | 'MANAGER' | 'RECEPTIONIST';
+
+export interface AdminUser { id: string; email: string; name: string; role: Role }
+
+export interface ManagedUser { id: string; email: string; name: string; role: Role; isActive: boolean; createdAt: string }
+
+export const ROLE_NAV: Record<Role, string[]> = {
+  SUPER_ADMIN:  ['dashboard', 'bookings', 'messages', 'services', 'team', 'chatbot', 'users', 'settings'],
+  MANAGER:      ['dashboard', 'bookings', 'messages', 'chatbot', 'users', 'settings'],
+  RECEPTIONIST: ['dashboard', 'bookings', 'messages', 'settings'],
+};
 
 export interface Booking {
   id: string; ref: string; parentName: string; childName: string; childAge: string;

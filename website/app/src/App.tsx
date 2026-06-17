@@ -16,6 +16,7 @@ import { ThemeInitializer } from './ThemeInitializer';
 import { LanguageProvider } from './LanguageProvider';
 import ScrollToTop from './components/ScrollToTop';
 import ChatWidget from './components/chatbot/ChatWidget';
+import { getStoredAdmin, ROLE_NAV } from './services/adminApi';
 
 // Admin
 import AdminLayout from './components/admin/AdminLayout';
@@ -27,12 +28,22 @@ import Messages from './pages/admin/Messages';
 import MessageDetail from './pages/admin/MessageDetail';
 import ServicesAdmin from './pages/admin/ServicesAdmin';
 import TeamAdmin from './pages/admin/TeamAdmin';
+import UsersAdmin from './pages/admin/UsersAdmin';
 import AdminSettings from './pages/admin/AdminSettings';
 import ChatbotAdmin from './pages/admin/Chatbot';
+import Unauthorized from './pages/admin/Unauthorized';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('admin_token');
   if (!token) return <Navigate to="/admin/login" replace />;
+  return <>{children}</>;
+}
+
+function RoleGuard({ allowed, children }: { allowed: string[]; children: React.ReactNode }) {
+  const admin = getStoredAdmin();
+  if (!admin || !ROLE_NAV[admin.role]?.some(k => allowed.includes(k))) {
+    return <Navigate to="/admin/unauthorized" replace />;
+  }
   return <>{children}</>;
 }
 
@@ -64,20 +75,25 @@ export default function App() {
           <Route path="/admin" element={<RequireAuth><AdminLayout /></RequireAuth>}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="unauthorized" element={<Unauthorized />} />
+
+            {/* All roles */}
             <Route path="bookings" element={<Bookings />} />
             <Route path="bookings/:id" element={<BookingDetail />} />
             <Route path="messages" element={<Messages />} />
             <Route path="messages/:id" element={<MessageDetail />} />
-            <Route path="services" element={<ServicesAdmin />} />
-            <Route path="team" element={<TeamAdmin />} />
-            <Route path="chatbot"  element={<ChatbotAdmin />} />
             <Route path="settings" element={<AdminSettings />} />
+
+            {/* SUPER_ADMIN only */}
+            <Route path="services" element={<RoleGuard allowed={['services']}><ServicesAdmin /></RoleGuard>} />
+            <Route path="team" element={<RoleGuard allowed={['team']}><TeamAdmin /></RoleGuard>} />
+
+            {/* SUPER_ADMIN + MANAGER */}
+            <Route path="chatbot" element={<RoleGuard allowed={['chatbot']}><ChatbotAdmin /></RoleGuard>} />
+            <Route path="users" element={<RoleGuard allowed={['users']}><UsersAdmin /></RoleGuard>} />
           </Route>
         </Routes>
       </LanguageProvider>
     </ThemeInitializer>
   );
 }
-
-
-
