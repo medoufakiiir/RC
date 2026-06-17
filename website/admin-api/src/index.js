@@ -29,5 +29,35 @@ app.use('/chat',            require('./routes/chat'));
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
+// Email test endpoint — remove after confirming emails work
+app.get('/test-email', async (_req, res) => {
+  const { bookingEmail } = require('./email');
+  try {
+    await bookingEmail({
+      id: 'test-id',
+      ref: 'RYD-TEST1',
+      parentName: 'Test Parent',
+      childName: 'Test Child',
+      childAge: '5',
+      service: 'Speech Therapy',
+      date: '2026-06-17',
+      time: '10:00 AM',
+      phone: '+966 50 000 0000',
+      email: '',
+      notes: '',
+    });
+    res.json({
+      ok: true,
+      config: {
+        hasApiKey: !!process.env.BREVO_API_KEY,
+        adminEmail: process.env.ADMIN_EMAIL || '(not set)',
+        senderEmail: process.env.BREVO_SENDER_EMAIL || '(not set)',
+      },
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Riyada Admin API listening on http://localhost:${PORT}`));
