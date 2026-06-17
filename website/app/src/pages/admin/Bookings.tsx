@@ -1,9 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Radio } from 'lucide-react';
 import { adminApi, type Booking } from '../../services/adminApi';
 
 const STATUSES = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
+const POLL_MS = 10_000;
 
 const STATUS_COLORS: Record<string, string> = {
   pending:   'bg-yellow-500/15 text-yellow-400',
@@ -21,20 +22,31 @@ export default function Bookings() {
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const isFirstLoad = useRef(true);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await adminApi.bookings({ status, search: query, page: String(page) });
       setBookings(res.bookings);
       setTotal(res.total);
       setPages(res.pages);
+      setLastUpdate(new Date());
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
+      isFirstLoad.current = false;
     }
   }, [status, query, page]);
 
+  // Initial load
   useEffect(() => { load(); }, [load]);
+
+  // Auto-poll every 10s
+  useEffect(() => {
+    const iv = setInterval(() => load(true), POLL_MS);
+    return () => clearInterval(iv);
+  }, [load]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -42,10 +54,23 @@ export default function Bookings() {
     setPage(1);
   }
 
+  function timeAgo() {
+    const secs = Math.floor((Date.now() - lastUpdate.getTime()) / 1000);
+    if (secs < 5) return 'just now';
+    if (secs < 60) return `${secs}s ago`;
+    return `${Math.floor(secs / 60)}m ago`;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-white">Bookings <span className="text-white/30 font-normal text-base ml-1">({total})</span></h1>
+        <h1 className="text-xl font-semibold text-white">
+          Bookings <span className="text-white/30 font-normal text-base ml-1">({total})</span>
+        </h1>
+        <div className="flex items-center gap-1.5 text-[11px] text-green-400/80">
+          <Radio size={12} className="animate-pulse" />
+          <span>Live · {timeAgo()}</span>
+        </div>
       </div>
 
       {/* Filters */}
@@ -80,13 +105,13 @@ export default function Bookings() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {loading && (
+              {loading && isFirstLoad.current && (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-white/30 text-sm">Loading…</td></tr>
               )}
-              {!loading && bookings.length === 0 && (
+              {!(loading && isFirstLoad.current) && bookings.length === 0 && (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-white/30 text-sm">No bookings found</td></tr>
               )}
-              {!loading && bookings.map(b => (
+              {!(loading && isFirstLoad.current) && bookings.map(b => (
                 <tr key={b.id} className="hover:bg-white/2 transition-colors">
                   <td className="px-4 py-3 text-xs font-mono text-white/50">{b.ref}</td>
                   <td className="px-4 py-3 text-white">{b.parentName}</td>
