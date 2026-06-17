@@ -4,9 +4,20 @@ const { getSystemPrompt } = require('../chatbot/system-prompt');
 
 const router = express.Router();
 
-const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
-const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
-const MODEL = 'deepseek-chat';
+// Auto-detect provider: Gemini (free) takes priority, then DeepSeek
+function getProvider() {
+  if (process.env.GEMINI_API_KEY) return {
+    url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    key: process.env.GEMINI_API_KEY,
+    model: 'gemini-2.0-flash',
+  };
+  if (process.env.DEEPSEEK_API_KEY) return {
+    url: 'https://api.deepseek.com/v1/chat/completions',
+    key: process.env.DEEPSEEK_API_KEY,
+    model: 'deepseek-chat',
+  };
+  return null;
+}
 
 const tools = [
   {
@@ -67,29 +78,23 @@ async function saveAppointment(data, sessionId) {
   try {
     await prisma.chatbotAppointment.create({
       data: {
-        sessionId:     sessionId ?? null,
-        parentName:    data.parent_name,
-        childName:     data.child_name,
-        childAge:      data.child_age,
-        service:       data.service,
-        phone:         data.phone,
-        preferredTime: data.preferred_time ?? null,
-        notes:         data.notes ?? null,
-        language:      data.language ?? 'ar',
-        status:        'pending',
-        source:        'chatbot',
+        sessionId: sessionId ?? null,
+        parentName: data.parent_name, childName: data.child_name, childAge: data.child_age,
+        service: data.service, phone: data.phone,
+        preferredTime: data.preferred_time ?? null, notes: data.notes ?? null,
+        language: data.language ?? 'ar', status: 'pending', source: 'chatbot',
       },
     });
     return true;
   } catch (e) { console.error('[saveAppointment]', e.message); return false; }
 }
 
-async function callDeepSeek(messages, useTools = true) {
-  const res = await fetch(DEEPSEEK_URL, {
+async function callLLM(provider, messages, useTools = true) {
+  const res = await fetch(provider.url, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${DEEPSEEK_KEY}`, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${provider.key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: MODEL,
+      model: provider.model,
       messages,
       max_tokens: 1024,
       ...(useTools && { tools, tool_choice: 'auto' }),
@@ -97,8 +102,8 @@ async function callDeepSeek(messages, useTools = true) {
   });
   if (!res.ok) {
     const err = await res.text();
-    console.error('[DeepSeek Error]', res.status, err);
-    throw new Error(`DeepSeek API error: ${res.status}`);
+    console.error('[LLM Error]', res.status, err);
+    throw new Error(`LLM API error: ${res.status}`);
   }
   return res.json();
 }
@@ -110,9 +115,9 @@ router.post('/', async (req, res) => {
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'Invalid messages' });
     }
-    if (!DEEPSEEK_KEY) {
-      return res.status(500).json({ error: 'Chatbot not configured' });
-    }
+
+    const provider = getProvider();
+    if (!provider) return res.status(500).json({ error: 'Chatbot not configured' });
 
     const language = detectLanguage(messages);
     await upsertSession({ sessionId: session_id, language, pageUrl: page_url, userAgent: user_agent, isNew: is_new_session });
@@ -120,18 +125,15 @@ router.post('/', async (req, res) => {
     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
     if (lastUserMsg) await saveMsg({ sessionId: session_id, role: 'user', content: lastUserMsg.content, language });
 
-    // Build DeepSeek messages with system prompt
-    const deepseekMessages = [
+    const llmMessages = [
       { role: 'system', content: getSystemPrompt() },
       ...messages,
     ];
 
-    const response = await callDeepSeek(deepseekMessages);
+    const response = await callLLM(provider, llmMessages);
     const choice = response.choices?.[0]?.message;
 
-    if (!choice) {
-      return res.status(500).json({ error: 'No response from AI' });
-    }
+    if (!choice) return res.status(500).json({ error: 'No response from AI' });
 
     // Handle tool calls (appointment booking)
     if (choice.tool_calls?.length > 0) {
@@ -140,35 +142,27 @@ router.post('/', async (req, res) => {
         const args = JSON.parse(toolCall.function.arguments);
         const saved = await saveAppointment(args, session_id);
 
-        const followUp = await callDeepSeek([
-          ...deepseekMessages,
+        const followUp = await callLLM(provider, [
+          ...llmMessages,
           choice,
           {
             role: 'tool',
             tool_call_id: toolCall.id,
             content: saved
               ? 'Appointment saved successfully.'
-              : 'Failed to save. Please ask the user to try again or contact us directly.',
+              : 'Failed to save. Ask the user to try again or contact us directly.',
           },
         ], false);
 
         const replyText = followUp.choices?.[0]?.message?.content ?? '';
         if (replyText) await saveMsg({ sessionId: session_id, role: 'assistant', content: replyText, language });
-
-        // Return in Anthropic-like format for frontend compatibility
-        return res.json({
-          content: [{ type: 'text', text: replyText }],
-        });
+        return res.json({ content: [{ type: 'text', text: replyText }] });
       }
     }
 
     const replyText = choice.content ?? '';
     if (replyText) await saveMsg({ sessionId: session_id, role: 'assistant', content: replyText, language });
-
-    // Return in Anthropic-like format for frontend compatibility
-    res.json({
-      content: [{ type: 'text', text: replyText }],
-    });
+    res.json({ content: [{ type: 'text', text: replyText }] });
   } catch (error) {
     console.error('[Chat API Error]', error);
     res.status(500).json({ error: 'Something went wrong.' });
