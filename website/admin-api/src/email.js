@@ -3,7 +3,7 @@ const ADMIN_EMAIL  = process.env.ADMIN_EMAIL   || 'admin@riyada.com';
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'noreply@riyada.com';
 const SITE_URL     = process.env.SITE_URL      || 'https://rc.riyada-ventures.com';
 const LOGO_URL     = `${SITE_URL}/logo/Riyada%20Center%20Logo%20Souce-01.png`;
-const ADMIN_URL    = `${SITE_URL}/admin`;
+const ADMIN_URL    = `${SITE_URL}/admin/dashboard`;
 
 function header(title, subtitle, bgColor) {
   return `
@@ -59,7 +59,7 @@ function bookingEmail(booking) {
           ${optRow('Notes', booking.notes)}
         </table>
         <div style="margin-top:20px;text-align:center">
-          <a href="${ADMIN_URL}/bookings"
+          <a href="${ADMIN_URL}"
              style="display:inline-block;background:#3355EE;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600">
             View in Admin Panel →
           </a>
@@ -95,7 +95,7 @@ function contactEmail(msg) {
           ${msg.message.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
         </div>
         <div style="margin-top:20px;text-align:center">
-          <a href="${ADMIN_URL}/messages"
+          <a href="${ADMIN_URL}"
              style="display:inline-block;background:#059669;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600">
             View in Admin Panel →
           </a>
