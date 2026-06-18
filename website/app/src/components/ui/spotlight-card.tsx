@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, type ReactNode } from 'react';
+import React, { useEffect, useRef, useState, type ReactNode } from 'react';
 
 interface GlowCardProps {
   children: ReactNode;
@@ -25,6 +25,8 @@ const sizeMap = {
   lg: 'w-80 h-96'
 };
 
+const DESKTOP_MQ = '(min-width: 768px)';
+
 const GlowCard: React.FC<GlowCardProps> = ({
   children,
   className = '',
@@ -37,11 +39,24 @@ const GlowCard: React.FC<GlowCardProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(DESKTOP_MQ).matches : true
+  );
 
   useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_MQ);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener('change', handler);
+    setIsDesktop(mq.matches);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Pointer tracking — desktop only
+  useEffect(() => {
+    if (!isDesktop) return;
+
     const syncPointer = (e: PointerEvent) => {
       const { clientX: x, clientY: y } = e;
-      
       if (cardRef.current) {
         cardRef.current.style.setProperty('--x', x.toFixed(2));
         cardRef.current.style.setProperty('--xp', (x / window.innerWidth).toFixed(2));
@@ -52,52 +67,51 @@ const GlowCard: React.FC<GlowCardProps> = ({
 
     document.addEventListener('pointermove', syncPointer);
     return () => document.removeEventListener('pointermove', syncPointer);
-  }, []);
+  }, [isDesktop]);
 
   const { base, spread } = glowColorMap[glowColor];
 
-  // Determine sizing
   const getSizeClasses = () => {
-    if (customSize) {
-      return ''; // Let className or inline styles handle sizing
-    }
+    if (customSize) return '';
     return sizeMap[size];
   };
 
   const getInlineStyles = (): React.CSSProperties & Record<string, string | number> => {
     const baseStyles: React.CSSProperties & Record<string, string | number> = {
-      '--base': base,
-      '--spread': spread,
-      '--radius': '14',
-      '--border': '3',
-      '--backdrop': backdropColor ?? 'hsl(0 0% 60% / 0.12)',
-      '--backup-border': 'var(--backdrop)',
-      '--size': '200',
-      '--outer': '1',
-      '--border-size': 'calc(var(--border, 2) * 1px)',
-      '--spotlight-size': 'calc(var(--size, 150) * 1px)',
-      '--hue': 'calc(var(--base) + (var(--xp, 0) * var(--spread, 0)))',
-      backgroundImage: `radial-gradient(
-        var(--spotlight-size) var(--spotlight-size) at
-        calc(var(--x, 0) * 1px)
-        calc(var(--y, 0) * 1px),
-        hsl(var(--hue, 210) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 70) * 1%) / var(--bg-spot-opacity, 0.1)), transparent
-      )`,
-      backgroundColor: 'var(--backdrop, transparent)',
-      backgroundSize: 'calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)))',
-      backgroundPosition: '50% 50%',
-      backgroundAttachment: 'fixed',
-      border: 'var(--border-size) solid var(--backup-border)',
+      backgroundColor: backdropColor ?? 'hsl(0 0% 60% / 0.12)',
+      border: isDesktop ? 'var(--border-size) solid var(--backup-border)' : '2px solid hsl(0 0% 100% / 0.08)',
       position: 'relative',
-      touchAction: 'none',
     };
 
-    if (width !== undefined) {
-      baseStyles.width = typeof width === 'number' ? `${width}px` : width;
+    // Desktop: full glow CSS vars + radial gradient
+    if (isDesktop) {
+      Object.assign(baseStyles, {
+        '--base': base,
+        '--spread': spread,
+        '--radius': '14',
+        '--border': '3',
+        '--backdrop': backdropColor ?? 'hsl(0 0% 60% / 0.12)',
+        '--backup-border': 'var(--backdrop)',
+        '--size': '200',
+        '--outer': '1',
+        '--border-size': 'calc(var(--border, 2) * 1px)',
+        '--spotlight-size': 'calc(var(--size, 150) * 1px)',
+        '--hue': 'calc(var(--base) + (var(--xp, 0) * var(--spread, 0)))',
+        backgroundImage: `radial-gradient(
+          var(--spotlight-size) var(--spotlight-size) at
+          calc(var(--x, 0) * 1px)
+          calc(var(--y, 0) * 1px),
+          hsl(var(--hue, 210) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 70) * 1%) / var(--bg-spot-opacity, 0.1)), transparent
+        )`,
+        backgroundSize: 'calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)))',
+        backgroundPosition: '50% 50%',
+        backgroundAttachment: 'fixed',
+        touchAction: 'none',
+      });
     }
-    if (height !== undefined) {
-      baseStyles.height = typeof height === 'number' ? `${height}px` : height;
-    }
+
+    if (width !== undefined) baseStyles.width = typeof width === 'number' ? `${width}px` : width;
+    if (height !== undefined) baseStyles.height = typeof height === 'number' ? `${height}px` : height;
 
     return baseStyles;
   };
@@ -119,7 +133,7 @@ const GlowCard: React.FC<GlowCardProps> = ({
       mask-clip: padding-box, border-box;
       mask-composite: intersect;
     }
-    
+
     [data-glow]::before {
       background-image: radial-gradient(
         calc(var(--spotlight-size) * 0.75) calc(var(--spotlight-size) * 0.75) at
@@ -129,7 +143,7 @@ const GlowCard: React.FC<GlowCardProps> = ({
       );
       filter: brightness(2);
     }
-    
+
     [data-glow]::after {
       background-image: radial-gradient(
         calc(var(--spotlight-size) * 0.5) calc(var(--spotlight-size) * 0.5) at
@@ -138,7 +152,7 @@ const GlowCard: React.FC<GlowCardProps> = ({
         hsl(0 100% 100% / var(--border-light-opacity, 1)), transparent 100%
       );
     }
-    
+
     [data-glow] [data-glow] {
       position: absolute;
       inset: 0;
@@ -151,7 +165,7 @@ const GlowCard: React.FC<GlowCardProps> = ({
       pointer-events: none;
       border: none;
     }
-    
+
     [data-glow] > [data-glow]::before {
       inset: -10px;
       border-width: 10px;
@@ -160,10 +174,10 @@ const GlowCard: React.FC<GlowCardProps> = ({
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: beforeAfterStyles }} />
+      {isDesktop && <style dangerouslySetInnerHTML={{ __html: beforeAfterStyles }} />}
       <div
         ref={cardRef}
-        data-glow
+        {...(isDesktop ? { 'data-glow': true } : {})}
         style={getInlineStyles()}
         className={`
           ${getSizeClasses()}
@@ -171,14 +185,13 @@ const GlowCard: React.FC<GlowCardProps> = ({
           rounded-2xl
           relative
           flex flex-col
-          shadow-[0_1rem_2rem_-1rem_black]
+          ${isDesktop ? 'shadow-[0_1rem_2rem_-1rem_black] backdrop-blur-[5px]' : 'shadow-lg'}
           p-4
           gap-4
-          backdrop-blur-[5px]
           ${className}
         `}
       >
-        <div ref={innerRef} data-glow></div>
+        {isDesktop && <div ref={innerRef} data-glow></div>}
         {children}
       </div>
     </>
