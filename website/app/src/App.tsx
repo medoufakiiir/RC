@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router';
 import Home from './pages/Home';
 import ServicesPage from './pages/ServicesPage';
@@ -18,20 +19,24 @@ import ScrollToTop from './components/ScrollToTop';
 import ChatWidget from './components/chatbot/ChatWidget';
 import { getStoredAdmin, ROLE_NAV } from './services/adminApi';
 
-// Admin
-import AdminLayout from './components/admin/AdminLayout';
-import AdminLogin from './pages/admin/Login';
-import Dashboard from './pages/admin/Dashboard';
-import Bookings from './pages/admin/Bookings';
-import BookingDetail from './pages/admin/BookingDetail';
-import Messages from './pages/admin/Messages';
-import MessageDetail from './pages/admin/MessageDetail';
-import ServicesAdmin from './pages/admin/ServicesAdmin';
-import TeamAdmin from './pages/admin/TeamAdmin';
-import UsersAdmin from './pages/admin/UsersAdmin';
-import AdminSettings from './pages/admin/AdminSettings';
-import ChatbotAdmin from './pages/admin/Chatbot';
-import Unauthorized from './pages/admin/Unauthorized';
+// Admin — lazy loaded (not included in public site bundle)
+const AdminLayout   = lazy(() => import('./components/admin/AdminLayout'));
+const AdminLogin    = lazy(() => import('./pages/admin/Login'));
+const Dashboard     = lazy(() => import('./pages/admin/Dashboard'));
+const Bookings      = lazy(() => import('./pages/admin/Bookings'));
+const BookingDetail = lazy(() => import('./pages/admin/BookingDetail'));
+const Messages      = lazy(() => import('./pages/admin/Messages'));
+const MessageDetail = lazy(() => import('./pages/admin/MessageDetail'));
+const ServicesAdmin = lazy(() => import('./pages/admin/ServicesAdmin'));
+const TeamAdmin     = lazy(() => import('./pages/admin/TeamAdmin'));
+const UsersAdmin    = lazy(() => import('./pages/admin/UsersAdmin'));
+const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
+const ChatbotAdmin  = lazy(() => import('./pages/admin/Chatbot'));
+const Unauthorized  = lazy(() => import('./pages/admin/Unauthorized'));
+
+function AdminFallback() {
+  return <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center text-white/40 text-sm">Loading…</div>;
+}
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('admin_token');
@@ -70,25 +75,19 @@ export default function App() {
           <Route path="/403" element={<Forbidden />} />
           <Route path="*" element={<NotFound />} />
 
-          {/* Admin */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<RequireAuth><AdminLayout /></RequireAuth>}>
+          {/* Admin — lazy loaded */}
+          <Route path="/admin/login" element={<Suspense fallback={<AdminFallback />}><AdminLogin /></Suspense>} />
+          <Route path="/admin" element={<RequireAuth><Suspense fallback={<AdminFallback />}><AdminLayout /></Suspense></RequireAuth>}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="unauthorized" element={<Unauthorized />} />
-
-            {/* All roles */}
             <Route path="bookings" element={<Bookings />} />
             <Route path="bookings/:id" element={<BookingDetail />} />
             <Route path="messages" element={<Messages />} />
             <Route path="messages/:id" element={<MessageDetail />} />
             <Route path="settings" element={<AdminSettings />} />
-
-            {/* SUPER_ADMIN only */}
             <Route path="services" element={<RoleGuard allowed={['services']}><ServicesAdmin /></RoleGuard>} />
             <Route path="team" element={<RoleGuard allowed={['team']}><TeamAdmin /></RoleGuard>} />
-
-            {/* SUPER_ADMIN + MANAGER */}
             <Route path="chatbot" element={<RoleGuard allowed={['chatbot']}><ChatbotAdmin /></RoleGuard>} />
             <Route path="users" element={<RoleGuard allowed={['users']}><UsersAdmin /></RoleGuard>} />
           </Route>
