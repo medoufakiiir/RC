@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Instagram, Twitter } from 'lucide-react';
+import { MapPin, Phone, Mail, Instagram, Twitter, Facebook } from 'lucide-react';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { useLanguage } from '../LanguageProvider';
@@ -193,15 +193,28 @@ export default function Footer() {
 
             <div className="flex items-center gap-2.5 mt-6">
               <a
-                href="#"
-                aria-label="Instagram"
+                href="https://www.facebook.com/profile.php?id=61590784002184"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Riyada Center on Facebook"
+                className="w-9 h-9 rounded-full bg-white/8 border border-white/10 flex items-center justify-center text-white/50 hover:bg-brand-blue hover:text-white hover:border-brand-blue transition-all duration-200"
+              >
+                <Facebook size={15} />
+              </a>
+              <a
+                href="https://www.instagram.com/riyada_medical_center/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Riyada Center on Instagram"
                 className="w-9 h-9 rounded-full bg-white/8 border border-white/10 flex items-center justify-center text-white/50 hover:bg-brand-blue hover:text-white hover:border-brand-blue transition-all duration-200"
               >
                 <Instagram size={15} />
               </a>
               <a
-                href="#"
-                aria-label="Twitter / X"
+                href="https://x.com/Riyada_centre"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Riyada Center on X"
                 className="w-9 h-9 rounded-full bg-white/8 border border-white/10 flex items-center justify-center text-white/50 hover:bg-brand-blue hover:text-white hover:border-brand-blue transition-all duration-200"
               >
                 <Twitter size={15} />
