@@ -40,6 +40,11 @@ function getAllProviders() {
 // ═══════════════════════════════════════
 const INSTANT_RESPONSES = [
   {
+    keywords: ['why riyada', 'why choose', 'why you', 'why should', 'ليش ريادة', 'لماذا ريادة', 'ليه ريادة'],
+    en: "Riyada Center is a specialized pediatric development and rehabilitation center in Riyadh. We offer:\n• 5 specialized therapy services under one roof\n• Qualified and experienced therapists\n• Personalized treatment plans for every child\n• A supportive and family-centered approach\n• Our motto: Connect. Develop. Rise.\n\nWould you like to learn more about our services or book an appointment?",
+    ar: "مركز ريادة هو مركز متخصص في تطوير وتأهيل الأطفال في الرياض. نقدم:\n• 5 خدمات علاجية متخصصة تحت سقف واحد\n• معالجين مؤهلين وذوي خبرة\n• خطط علاج مخصصة لكل طفل\n• نهج داعم يركز على الأسرة\n• شعارنا: تواصل. تطور. انطلق.\n\nهل تود معرفة المزيد عن خدماتنا أو حجز موعد؟",
+  },
+  {
     keywords: ['services', 'service', 'what do you offer', 'what do you do', 'خدمات', 'خدماتكم', 'ماذا تقدم'],
     en: "We offer 5 specialized services:\n• Speech & Language Therapy — for communication and language delays\n• Occupational Therapy (OT) — for fine motor skills and sensory processing\n• Physical Therapy (PT) — for gross motor skills and movement\n• ABA Therapy — for behavioral challenges and autism support\n• Developmental Assessment — a full evaluation to understand your child's needs\n\nWould you like to know more about any service, or book an appointment?",
     ar: "نقدم 5 خدمات متخصصة:\n• علاج النطق واللغة — لتأخر التواصل واللغة\n• العلاج الوظيفي — للمهارات الحركية الدقيقة والتكامل الحسي\n• العلاج الطبيعي — للمهارات الحركية والحركة\n• علاج ABA السلوكي — للتحديات السلوكية ودعم التوحد\n• التقييم التطوري — تقييم شامل لفهم احتياجات طفلك\n\nهل تود معرفة المزيد عن أي خدمة، أو حجز موعد؟",
@@ -98,11 +103,6 @@ const INSTANT_RESPONSES = [
     keywords: ['assessment', 'evaluation', 'diagnos', 'check', 'test', 'تقييم', 'فحص', 'تشخيص'],
     en: "Our Developmental Assessment is a comprehensive evaluation that:\n• Identifies your child's strengths and areas needing support\n• Creates a personalized therapy plan\n• Is the best starting point if you're unsure which therapy fits\n\nWould you like to book one?",
     ar: "التقييم التطوري هو تقييم شامل:\n• يحدد نقاط قوة طفلك والمجالات التي تحتاج دعم\n• ينشئ خطة علاج مخصصة\n• هو أفضل نقطة بداية إذا كنت غير متأكد أي علاج يناسب طفلك\n\nهل تود حجز تقييم؟",
-  },
-  {
-    keywords: ['why riyada', 'why choose', 'why you', 'ليش ريادة', 'لماذا ريادة', 'ليه ريادة'],
-    en: "Riyada Center is a specialized pediatric development and rehabilitation center in Riyadh. We offer:\n• 5 specialized therapy services under one roof\n• Qualified and experienced therapists\n• Personalized treatment plans for every child\n• A supportive and family-centered approach\n• Our motto: Connect. Develop. Rise.\n\nWould you like to learn more about our services or book an appointment?",
-    ar: "مركز ريادة هو مركز متخصص في تطوير وتأهيل الأطفال في الرياض. نقدم:\n• 5 خدمات علاجية متخصصة تحت سقف واحد\n• معالجين مؤهلين وذوي خبرة\n• خطط علاج مخصصة لكل طفل\n• نهج داعم يركز على الأسرة\n• شعارنا: تواصل. تطور. انطلق.\n\nهل تود معرفة المزيد عن خدماتنا أو حجز موعد؟",
   },
 ];
 
