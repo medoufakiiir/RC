@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
 import {
   LayoutDashboard, CalendarCheck, MessageSquare, Settings2,
   Users, Stethoscope, LogOut, Menu, X, ChevronRight, Bot, Bell, Shield,
@@ -85,6 +85,11 @@ export default function AdminLayout() {
   }
 
   const totalNotif = notif.messages + notif.bookings;
+  const location = useLocation();
+  const mustChange = localStorage.getItem('must_change_password') === 'true';
+  if (mustChange && !location.pathname.endsWith('/settings')) {
+    return <Navigate to="/admin/settings" replace />;
+  }
 
   return (
     <div className="min-h-screen flex bg-[#0a0f1e] text-white" dir="ltr">

@@ -15,10 +15,16 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
     try {
-      const { token, user } = await adminApi.login(email, password);
-      localStorage.setItem('admin_token', token);
-      localStorage.setItem('admin_user', JSON.stringify(user));
-      navigate('/admin/dashboard');
+      const res = await adminApi.login(email, password);
+      localStorage.setItem('admin_token', res.token);
+      localStorage.setItem('admin_user', JSON.stringify(res.user));
+      if (res.mustChangePassword) {
+        localStorage.setItem('must_change_password', 'true');
+        navigate('/admin/settings');
+      } else {
+        localStorage.removeItem('must_change_password');
+        navigate('/admin/dashboard');
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {

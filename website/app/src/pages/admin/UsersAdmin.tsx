@@ -13,8 +13,9 @@ const ROLE_BADGE: Record<string, string> = {
   RECEPTIONIST: 'bg-green-500/15 text-green-400',
 };
 
-function UserForm({ initial, availableRoles, onSave, onCancel }: {
+function UserForm({ initial, isCreate, availableRoles, onSave, onCancel }: {
   initial: FormState;
+  isCreate: boolean;
   availableRoles: string[];
   onSave: (f: FormState) => Promise<void>;
   onCancel: () => void;
@@ -48,11 +49,13 @@ function UserForm({ initial, availableRoles, onSave, onCancel }: {
             {availableRoles.map(r => <option key={r} value={r}>{r.replace('_', ' ')}</option>)}
           </select>
         </div>
-        <div>
-          <label className="block text-xs text-white/40 mb-1">Password {initial.email ? '(leave blank)' : ''}</label>
-          <input type="password" className={inp} value={f.password} onChange={e => set('password', e.target.value)}
-            placeholder={initial.email ? 'Unchanged' : 'Riyada@2025'} />
-        </div>
+        {isCreate && (
+          <div>
+            <label className="block text-xs text-white/40 mb-1">Password (min 8 chars)</label>
+            <input type="password" className={inp} value={f.password} onChange={e => set('password', e.target.value)}
+              required minLength={8} placeholder="Set initial password" />
+          </div>
+        )}
       </div>
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="p-1.5 text-white/40 hover:text-white"><X size={16} /></button>
@@ -82,7 +85,7 @@ export default function UsersAdmin() {
   }, []);
 
   async function create(f: FormState) {
-    const user = await adminApi.createUser({ email: f.email, name: f.name, role: f.role, password: f.password || undefined });
+    const user = await adminApi.createUser({ email: f.email, name: f.name, role: f.role, password: f.password });
     setUsers(prev => [...prev, user]);
     setCreating(false);
   }
@@ -99,11 +102,16 @@ export default function UsersAdmin() {
   }
 
   async function resetPwd(id: string) {
-    if (!confirm('Reset password to Riyada@2025?')) return;
+    if (!confirm('Generate a new temporary password for this user? They will be required to change it on next login.')) return;
     setResetting(id);
-    await adminApi.resetPassword(id);
+    try {
+      const { tempPassword } = await adminApi.resetPassword(id);
+      setUsers(prev => prev.map(u => u.id === id ? { ...u, mustChangePassword: true } : u));
+      alert(`Temporary password: ${tempPassword}\n\nShare this securely. The user must change it on next login.`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Reset failed');
+    }
     setResetting(null);
-    alert('Password reset to Riyada@2025');
   }
 
   if (loading) return <div className="text-white/40 text-sm">Loading…</div>;
@@ -118,14 +126,14 @@ export default function UsersAdmin() {
         </button>
       </div>
 
-      {creating && <UserForm initial={EMPTY} availableRoles={availableRoles} onSave={create} onCancel={() => setCreating(false)} />}
+      {creating && <UserForm initial={EMPTY} isCreate availableRoles={availableRoles} onSave={create} onCancel={() => setCreating(false)} />}
 
       <div className="bg-[#0d1428] border border-white/8 rounded-xl overflow-hidden divide-y divide-white/5">
         {users.length === 0 && <div className="px-4 py-8 text-center text-white/30 text-sm">No users found</div>}
         {users.map(u => (
           editing === u.id ? (
             <div key={u.id} className="p-3">
-              <UserForm initial={{ name: u.name, email: u.email, role: u.role, password: '' }} availableRoles={availableRoles}
+              <UserForm initial={{ name: u.name, email: u.email, role: u.role, password: '' }} isCreate={false} availableRoles={availableRoles}
                 onSave={f => update(u.id, f)} onCancel={() => setEditing(null)} />
             </div>
           ) : (
@@ -134,6 +142,7 @@ export default function UsersAdmin() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-white">{u.name}</span>
                   {!u.isActive && <span className="text-[10px] bg-red-500/15 text-red-400 px-1.5 py-0.5 rounded-full">Inactive</span>}
+                  {u.mustChangePassword && u.isActive && <span className="text-[10px] bg-yellow-500/15 text-yellow-400 px-1.5 py-0.5 rounded-full">Must change password</span>}
                 </div>
                 <div className="text-xs text-white/40 mt-0.5">{u.email}</div>
               </div>

@@ -25,7 +25,7 @@ async function req<T>(method: string, path: string, body?: unknown, auth = true)
 export const adminApi = {
   // Auth
   login: (email: string, password: string) =>
-    req<{ token: string; user: AdminUser }>('POST', '/auth/login', { email, password }, false),
+    req<{ token: string; user: AdminUser; mustChangePassword: boolean }>('POST', '/auth/login', { email, password }, false),
   me: () => req<AdminUser>('GET', '/auth/me'),
   changePassword: (currentPassword: string, newPassword: string) =>
     req('POST', '/auth/change-password', { currentPassword, newPassword }),
@@ -64,7 +64,7 @@ export const adminApi = {
   users: () => req<ManagedUser[]>('GET', '/admin/users'),
   createUser: (data: { email: string; name: string; role: string; password?: string }) => req<ManagedUser>('POST', '/admin/users', data),
   updateUser: (id: string, data: Partial<{ name: string; email: string; role: string; isActive: boolean }>) => req<ManagedUser>('PATCH', `/admin/users/${id}`, data),
-  resetPassword: (id: string, password?: string) => req('POST', `/admin/users/${id}/reset-password`, { password }),
+  resetPassword: (id: string) => req<{ ok: boolean; tempPassword: string }>('POST', `/admin/users/${id}/reset-password`, {}),
 
   // Settings
   settings: () => req<Record<string, string>>('GET', '/admin/settings'),
@@ -89,7 +89,7 @@ export type Role = 'SUPER_ADMIN' | 'MANAGER' | 'RECEPTIONIST';
 
 export interface AdminUser { id: string; email: string; name: string; role: Role }
 
-export interface ManagedUser { id: string; email: string; name: string; role: Role; isActive: boolean; createdAt: string }
+export interface ManagedUser { id: string; email: string; name: string; role: Role; isActive: boolean; mustChangePassword: boolean; createdAt: string }
 
 export const ROLE_NAV: Record<Role, string[]> = {
   SUPER_ADMIN:  ['dashboard', 'bookings', 'messages', 'services', 'team', 'chatbot', 'users', 'settings'],

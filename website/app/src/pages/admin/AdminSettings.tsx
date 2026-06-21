@@ -34,6 +34,8 @@ export default function AdminSettings() {
     }
   }
 
+  const mustChange = localStorage.getItem('must_change_password') === 'true';
+
   async function changePassword(e: React.FormEvent) {
     e.preventDefault();
     setPwdMsg('');
@@ -44,6 +46,7 @@ export default function AdminSettings() {
     setPwdSaving(true);
     try {
       await adminApi.changePassword(curPwd, newPwd);
+      localStorage.removeItem('must_change_password');
       setPwdMsg('Password updated successfully.');
       setCurPwd(''); setNewPwd(''); setConfirmPwd('');
     } catch (err: unknown) {
@@ -97,6 +100,15 @@ export default function AdminSettings() {
       )}
 
       {/* Change Password — all roles */}
+      {mustChange && (
+        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 flex items-center gap-3">
+          <span className="text-yellow-400 text-lg">⚠</span>
+          <div>
+            <div className="text-sm font-medium text-yellow-300">Password change required</div>
+            <div className="text-xs text-yellow-400/70 mt-0.5">You must set a new password before accessing the admin panel.</div>
+          </div>
+        </div>
+      )}
       <form onSubmit={changePassword} className="bg-[#0d1428] border border-white/8 rounded-xl p-5 space-y-4">
         <h2 className="text-sm font-medium text-white mb-2">Change Password</h2>
         <div>
