@@ -6,12 +6,20 @@ const router = express.Router();
 
 function getAllProviders() {
   const providers = [];
-  if (process.env.GROQ_API_KEY) providers.push({
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    key: process.env.GROQ_API_KEY,
-    model: 'llama-3.3-70b-versatile',
-    name: 'groq',
-  });
+  if (process.env.GROQ_API_KEY) {
+    providers.push({
+      url: 'https://api.groq.com/openai/v1/chat/completions',
+      key: process.env.GROQ_API_KEY,
+      model: 'llama-3.3-70b-versatile',
+      name: 'groq-70b',
+    });
+    providers.push({
+      url: 'https://api.groq.com/openai/v1/chat/completions',
+      key: process.env.GROQ_API_KEY,
+      model: 'llama-3.1-8b-instant',
+      name: 'groq-8b',
+    });
+  }
   if (process.env.GEMINI_API_KEY) providers.push({
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
     key: process.env.GEMINI_API_KEY,
