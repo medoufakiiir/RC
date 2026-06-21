@@ -288,7 +288,7 @@ function handleBookingFlow(sessionId, userText, language) {
   let session = bookingSessions.get(sessionId);
 
   if (!session) {
-    session = { step: 0, data: {}, language };
+    session = { step: 0, data: {}, language, createdAt: Date.now() };
     bookingSessions.set(sessionId, session);
     const q = BOOKING_QUESTIONS[BOOKING_STEPS[0]];
     const intro = language === 'ar'
@@ -397,17 +397,18 @@ router.post('/', async (req, res) => {
 
     // CHECK IF IN ACTIVE BOOKING FLOW
     if (bookingSessions.has(session_id)) {
-      const reply = handleBookingFlow(session_id, userText, language);
+      const bookingLang = bookingSessions.get(session_id).language || language;
+      const reply = handleBookingFlow(session_id, userText, bookingLang);
 
       if (reply === '__SAVE_BOOKING__') {
         const session = bookingSessions.get(session_id) || { data: {} };
-        const saved = await saveAppointmentToDB(session.data, session_id, language);
+        const saved = await saveAppointmentToDB(session.data, session_id, bookingLang);
         bookingSessions.delete(session_id);
         const confirmMsg = saved
-          ? (language === 'ar'
+          ? (bookingLang === 'ar'
             ? "تم استلام طلب حجزك بنجاح! ✓\n\nسيتواصل معك فريقنا خلال 24 ساعة لتأكيد الموعد. شكراً لثقتك بمركز ريادة!"
             : "Your appointment request has been received! ✓\n\nOur team will contact you within 24 hours to confirm. Thank you for choosing Riyada Center!")
-          : (language === 'ar'
+          : (bookingLang === 'ar'
             ? "عذراً، حدث خطأ في حفظ الحجز. يرجى التواصل معنا مباشرة على RC@riyada-ventures.com"
             : "Sorry, there was an error saving your booking. Please contact us directly at RC@riyada-ventures.com");
         await saveMsg({ sessionId: session_id, role: 'assistant', content: confirmMsg, language });
