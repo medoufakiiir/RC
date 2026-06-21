@@ -306,7 +306,6 @@ function handleBookingFlow(sessionId, userText, language) {
     const isNo = /^(no|nope|n|wrong|غلط|لا|لأ|خطأ)$/i.test(lower);
 
     if (isYes) {
-      bookingSessions.delete(sessionId);
       return '__SAVE_BOOKING__';
     }
     if (isNo) {
