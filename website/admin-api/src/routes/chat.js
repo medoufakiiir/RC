@@ -95,17 +95,42 @@ async function saveMsg({ sessionId, role, content, language }) {
   } catch (e) { console.error('[saveMsg]', e.message); }
 }
 
+const VALID_SERVICES = [
+  'speech', 'language', 'نطق', 'لغة',
+  'occupational', 'ot', 'وظيفي',
+  'physical', 'pt', 'طبيعي',
+  'aba', 'behavior', 'سلوك', 'سلوكي',
+  'assessment', 'evaluation', 'تقييم',
+];
+
+function validateAppointment(data) {
+  if (!data.parent_name || data.parent_name.trim().split(/\s+/).length < 2) return 'Invalid parent name';
+  if (!data.child_name || data.child_name.trim().length < 2) return 'Invalid child name';
+  if (!data.child_age) return 'Missing child age';
+  const ageNum = parseInt(data.child_age);
+  if (isNaN(ageNum) && !/\d/.test(data.child_age)) return 'Invalid child age';
+  if (!isNaN(ageNum) && (ageNum < 0 || ageNum > 18)) return 'Child age must be 0-18';
+  if (!data.phone) return 'Missing phone';
+  const digits = data.phone.replace(/\D/g, '');
+  if (digits.length < 8) return 'Phone number too short';
+  if (!data.service) return 'Missing service';
+  const svcLower = data.service.toLowerCase();
+  if (!VALID_SERVICES.some(s => svcLower.includes(s))) return 'Service not recognized';
+  return null;
+}
+
 async function saveAppointment(data, sessionId) {
-  if (!data.parent_name || !data.child_name || !data.phone) {
-    console.error('[saveAppointment] Missing required fields — blocked');
+  const error = validateAppointment(data);
+  if (error) {
+    console.error('[saveAppointment] Validation failed:', error, data);
     return false;
   }
   try {
     await prisma.chatbotAppointment.create({
       data: {
         sessionId: sessionId ?? null,
-        parentName: data.parent_name, childName: data.child_name, childAge: data.child_age || '',
-        service: data.service || '', phone: data.phone,
+        parentName: data.parent_name.trim(), childName: data.child_name.trim(), childAge: data.child_age || '',
+        service: data.service || '', phone: data.phone.trim(),
         preferredTime: data.preferred_time ?? null, notes: data.notes ?? null,
         language: data.language ?? 'ar', status: 'pending', source: 'chatbot',
       },
@@ -180,8 +205,8 @@ router.post('/', async (req, res) => {
             role: 'tool',
             tool_call_id: toolCall.id,
             content: saved
-              ? 'Appointment saved successfully. Tell the user their appointment is booked and the team will contact them within 24 hours.'
-              : 'Booking FAILED because required information is missing. Ask the user for: parent full name, child name, child age, phone number. Collect them one by one.',
+              ? 'Appointment request saved successfully. Tell the user their request has been received and our team will contact them within 24 hours to confirm the appointment.'
+              : 'Booking FAILED — the information provided is incomplete or invalid. You MUST go back and collect the correct information from the user: parent full name (first + last), child name, child age (0-18), a valid phone number (at least 8 digits), and one of our 5 services. Ask one question at a time. Do NOT attempt to book again until all fields are valid.',
           },
         ], false);
 
