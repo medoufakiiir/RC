@@ -139,24 +139,34 @@ async function saveAppointment(data, sessionId) {
   } catch (e) { console.error('[saveAppointment]', e.message); return false; }
 }
 
-async function callLLM(provider, messages, useTools = true) {
-  const res = await fetch(provider.url, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${provider.key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: provider.model,
-      messages,
-      max_tokens: 1024,
-      temperature: 0.3,
-      ...(useTools && { tools, tool_choice: 'auto' }),
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    console.error('[LLM Error]', res.status, err);
-    throw new Error(`LLM API error: ${res.status}`);
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function callLLM(provider, messages, useTools = true, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const res = await fetch(provider.url, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${provider.key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: provider.model,
+        messages,
+        max_tokens: 1024,
+        temperature: 0.3,
+        ...(useTools && { tools, tool_choice: 'auto' }),
+      }),
+    });
+    if (res.status === 429 && attempt < retries) {
+      const wait = attempt * 2000;
+      console.warn(`[LLM] Rate limited, retrying in ${wait}ms (attempt ${attempt}/${retries})`);
+      await sleep(wait);
+      continue;
+    }
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('[LLM Error]', res.status, err);
+      throw new Error(`LLM API error: ${res.status}`);
+    }
+    return res.json();
   }
-  return res.json();
 }
 
 router.post('/', async (req, res) => {
@@ -229,7 +239,11 @@ router.post('/', async (req, res) => {
     res.json({ content: [{ type: 'text', text: replyText }] });
   } catch (error) {
     console.error('[Chat API Error]', error);
-    res.status(500).json({ error: 'Something went wrong.' });
+    const isRateLimit = error.message?.includes('429');
+    const fallback = isRateLimit
+      ? { content: [{ type: 'text', text: 'عذراً، الخدمة مشغولة حالياً. يرجى الانتظار قليلاً والمحاولة مرة أخرى.\n\nSorry, I\'m a bit busy right now. Please wait a moment and try again.' }] }
+      : { error: 'Something went wrong.' };
+    res.status(isRateLimit ? 429 : 500).json(fallback);
   }
 });
 
