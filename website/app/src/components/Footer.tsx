@@ -211,7 +211,7 @@ export default function Footer() {
                 <Instagram size={15} />
               </a>
               <a
-                href="https://x.com/Riyada_centre"
+                href="https://x.com/Riyada_m_center"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Riyada Center on X"

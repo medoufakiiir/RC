@@ -1,0 +1,137 @@
+================================================================
+RIYADA MEDICAL CENTRE — مركز ريادة الطبي
+Full Project Documentation
+================================================================
+
+Developed by:  Mohamed Oufakir
+Company:       Riyada Ventures — Riyadh, Saudi Arabia
+Completed:     June 2026
+
+----------------------------------------------------------------
+PROJECT OVERVIEW
+----------------------------------------------------------------
+Riyada Medical Centre is a bilingual (Arabic/English) pediatric
+rehabilitation centre website built for a Riyadh-based medical
+facility specialising in therapeutic services for children aged
+3 to 12 years. The platform presents the centre's full range of
+services, team, packages, and booking system in a professional,
+family-oriented digital experience.
+
+----------------------------------------------------------------
+TECHNOLOGY STACK
+----------------------------------------------------------------
+Framework:              Vite + React 18 (SPA)
+Language:               TypeScript
+Styling:                Tailwind CSS v4 (dark/light mode, RTL/LTR)
+Internationalization:   Custom i18n system (Arabic + English,
+                        full RTL layout support)
+Animation:              Framer Motion
+Routing:                React Router v6
+Fonts:                  DX Lactos (brand display),
+                        Nunito (body),
+                        Noto Kufi Arabic (Arabic locale)
+Brand Color:            Cobalt Blue #3355EE
+Deployment:             Vercel-ready (static SPA)
+
+----------------------------------------------------------------
+PAGES & FEATURES
+----------------------------------------------------------------
+• Home               — Hero, Services preview, Who We Serve,
+                       Why Riyada, Stats bar, Marquee,
+                       Packages preview, Contact CTA
+
+• About              — Brand hero split, Vision / Mission /
+                       Values cards, Team grid, Visit Our Center
+
+• Services           — Overview cards for all 4 therapy
+                       services with animated entrance
+
+• Assessments & Consultations
+• ABA / Behavior Therapy
+• Speech & Language Therapy
+• Occupational Therapy
+
+  Each service page includes:
+    — Hero with mascot or icon visual
+    — About This Service (bilingual paragraphs)
+    — What We Do (bilingual icon checklist)
+    — What We Treat (pill tag group)
+    — Our Process (4-step numbered cards)
+    — Frequently Asked Questions (accordion)
+    — CTA Section with Book a Free Consultation button
+
+• Packages           — Therapy packages with pricing,
+                       discount badges, feature lists,
+                       and a highlighted "Most Popular" card
+
+• Booking            — Multi-step booking form:
+                       Step 1 — Select service
+                       Step 2 — Select package
+                       Step 3 — Child details
+                       Step 4 — Select date
+                       Step 5 — Select time slot
+                       Step 6 — Confirm booking
+                       Generates booking reference and stores
+                       to in-memory store
+
+• Contact            — Full contact form with validation,
+                       sidebar with location / phone / email,
+                       success state, admin-accessible messages
+
+• Admin              — Password-protected bookings dashboard
+                       displaying all submitted bookings
+
+----------------------------------------------------------------
+DESIGN SYSTEM
+----------------------------------------------------------------
+• Fully responsive — mobile, tablet, desktop (1440px max-width)
+• Light mode and dark mode — full token-based CSS variable system
+• Dark mode default with user-toggleable light mode persisted
+  to localStorage
+• RTL layout for Arabic locale — logical CSS properties
+  (ms-/me-, ps-/pe-) throughout, flex direction reversals handled
+• Five brand accent colours:
+    Blue   #3355EE  /  Pink   #FF4D94  /  Green  #33CC44
+    Purple #7766DD  /  Yellow #FFCC22
+• Three mascot characters:
+    Language Explorer (Speech & Language)
+    Behavior Guide    (ABA Therapy)
+    Skill Builder     (Occupational Therapy)
+• Framer Motion page entrance animations and scroll reveals
+• Consistent design tokens via Tailwind config:
+    rounded-card, shadow-card, btn-primary, btn-secondary,
+    card-surface, glass-pill, etc.
+
+----------------------------------------------------------------
+INTERNATIONALIZATION
+----------------------------------------------------------------
+Every visible string on every page is translated into Arabic
+using a flat custom i18n.ts translation object.
+
+Arabic pages use:
+  • document.dir = "rtl"
+  • Noto Kufi Arabic font via html[dir="rtl"] CSS selector
+  • Logical CSS properties for spacing and borders
+  • RTL-aware animations (x-axis directions reversed)
+  • dir="ltr" on individual elements where LTR is required
+    (phone numbers, time slots, brand name letter spans)
+
+----------------------------------------------------------------
+CUSTOM FEATURES
+----------------------------------------------------------------
+• Scroll-to-top on every route change (ScrollToTop component)
+  — replaces per-page useEffect pattern
+• Theme initializer prevents flash of unstyled content (FOUC)
+  by reading localStorage before first render
+• In-memory contact message store with admin view
+• Booking reference generator (RYD-XXXXXX format)
+• Animated floating mascots with CSS keyframe @keyframes float
+
+----------------------------------------------------------------
+DEVELOPED BY
+----------------------------------------------------------------
+Mohamed Oufakir
+Full-Stack Developer & UI/UX Designer
+Riyada Ventures — Riyadh, Saudi Arabia
+
+================================================================
