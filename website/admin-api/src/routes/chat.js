@@ -4,26 +4,27 @@ const { getSystemPrompt } = require('../chatbot/system-prompt');
 
 const router = express.Router();
 
-function getProvider() {
-  if (process.env.GROQ_API_KEY) return {
+function getAllProviders() {
+  const providers = [];
+  if (process.env.GROQ_API_KEY) providers.push({
     url: 'https://api.groq.com/openai/v1/chat/completions',
     key: process.env.GROQ_API_KEY,
     model: 'llama-3.3-70b-versatile',
     name: 'groq',
-  };
-  if (process.env.GEMINI_API_KEY) return {
+  });
+  if (process.env.GEMINI_API_KEY) providers.push({
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
     key: process.env.GEMINI_API_KEY,
     model: 'gemini-2.0-flash',
     name: 'gemini',
-  };
-  if (process.env.DEEPSEEK_API_KEY) return {
+  });
+  if (process.env.DEEPSEEK_API_KEY) providers.push({
     url: 'https://api.deepseek.com/v1/chat/completions',
     key: process.env.DEEPSEEK_API_KEY,
     model: 'deepseek-chat',
     name: 'deepseek',
-  };
-  return null;
+  });
+  return providers;
 }
 
 const tools = [
@@ -139,34 +140,42 @@ async function saveAppointment(data, sessionId) {
   } catch (e) { console.error('[saveAppointment]', e.message); return false; }
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-async function callLLM(provider, messages, useTools = true, retries = 3) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    const res = await fetch(provider.url, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${provider.key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+async function callLLM(providers, messages, useTools = true) {
+  let lastError;
+  for (const provider of providers) {
+    try {
+      const body = {
         model: provider.model,
         messages,
         max_tokens: 1024,
         temperature: 0.3,
-        ...(useTools && { tools, tool_choice: 'auto' }),
-      }),
-    });
-    if (res.status === 429 && attempt < retries) {
-      const wait = attempt * 2000;
-      console.warn(`[LLM] Rate limited, retrying in ${wait}ms (attempt ${attempt}/${retries})`);
-      await sleep(wait);
-      continue;
+      };
+      if (useTools && provider.name !== 'gemini') body.tools = tools;
+      if (useTools && provider.name !== 'gemini') body.tool_choice = 'auto';
+
+      const res = await fetch(provider.url, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${provider.key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.status === 429) {
+        console.warn(`[LLM] ${provider.name} rate limited, trying next provider...`);
+        lastError = new Error(`${provider.name} rate limited`);
+        continue;
+      }
+      if (!res.ok) {
+        const err = await res.text();
+        console.error(`[LLM Error] ${provider.name}:`, res.status, err);
+        lastError = new Error(`${provider.name} error: ${res.status}`);
+        continue;
+      }
+      return { result: await res.json(), provider };
+    } catch (e) {
+      console.error(`[LLM] ${provider.name} failed:`, e.message);
+      lastError = e;
     }
-    if (!res.ok) {
-      const err = await res.text();
-      console.error('[LLM Error]', res.status, err);
-      throw new Error(`LLM API error: ${res.status}`);
-    }
-    return res.json();
   }
+  throw lastError || new Error('No LLM providers available');
 }
 
 router.post('/', async (req, res) => {
@@ -183,8 +192,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Message too long. Please shorten your message.' });
     }
 
-    const provider = getProvider();
-    if (!provider) return res.status(500).json({ error: 'Chatbot not configured' });
+    const providers = getAllProviders();
+    if (providers.length === 0) return res.status(500).json({ error: 'Chatbot not configured' });
 
     const language = detectLanguage(messages);
     await upsertSession({ sessionId: session_id, language, pageUrl: page_url, userAgent: user_agent, isNew: is_new_session });
@@ -203,7 +212,7 @@ router.post('/', async (req, res) => {
       ...messages,
     ];
 
-    const response = await callLLM(provider, llmMessages);
+    const { result: response, provider: usedProvider } = await callLLM(providers, llmMessages);
     const choice = response.choices?.[0]?.message;
 
     if (!choice) return res.status(500).json({ error: 'No response from AI' });
@@ -214,7 +223,7 @@ router.post('/', async (req, res) => {
         const args = JSON.parse(toolCall.function.arguments);
         const saved = await saveAppointment(args, session_id);
 
-        const followUp = await callLLM(provider, [
+        const { result: followUp } = await callLLM([usedProvider, ...providers.filter(p => p.name !== usedProvider.name)], [
           ...llmMessages,
           choice,
           {
@@ -239,7 +248,7 @@ router.post('/', async (req, res) => {
     res.json({ content: [{ type: 'text', text: replyText }] });
   } catch (error) {
     console.error('[Chat API Error]', error);
-    const isRateLimit = error.message?.includes('429');
+    const isRateLimit = error.message?.includes('rate limit');
     const fallback = isRateLimit
       ? { content: [{ type: 'text', text: 'عذراً، الخدمة مشغولة حالياً. يرجى الانتظار قليلاً والمحاولة مرة أخرى.\n\nSorry, I\'m a bit busy right now. Please wait a moment and try again.' }] }
       : { error: 'Something went wrong.' };
