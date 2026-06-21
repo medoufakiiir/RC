@@ -158,15 +158,14 @@ async function callLLM(providers, messages, useTools = true) {
         headers: { 'Authorization': `Bearer ${provider.key}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (res.status === 429) {
-        console.warn(`[LLM] ${provider.name} rate limited, trying next provider...`);
-        lastError = new Error(`${provider.name} rate limited`);
-        continue;
-      }
       if (!res.ok) {
         const err = await res.text();
-        console.error(`[LLM Error] ${provider.name}:`, res.status, err);
-        lastError = new Error(`${provider.name} error: ${res.status}`);
+        console.error(`[LLM] ${provider.name} HTTP ${res.status}:`, err.slice(0, 300));
+        if (res.status === 429) {
+          lastError = new Error(`${provider.name} rate limited`);
+        } else {
+          lastError = new Error(`${provider.name} error: ${res.status}`);
+        }
         continue;
       }
       return { result: await res.json(), provider };
