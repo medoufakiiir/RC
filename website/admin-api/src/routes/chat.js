@@ -1,38 +1,116 @@
 const express = require('express');
 const prisma = require('../db');
-const { getSystemPrompt } = require('../chatbot/system-prompt');
 
 const router = express.Router();
 
-function getAllProviders() {
-  const providers = [];
-  if (process.env.GROQ_API_KEY) {
-    providers.push({
-      url: 'https://api.groq.com/openai/v1/chat/completions',
-      key: process.env.GROQ_API_KEY,
-      model: 'llama-3.3-70b-versatile',
-      name: 'groq-70b',
-    });
-    providers.push({
-      url: 'https://api.groq.com/openai/v1/chat/completions',
-      key: process.env.GROQ_API_KEY,
-      model: 'llama-3.1-8b-instant',
-      name: 'groq-8b',
-    });
+// ═══════════════════════════════════════
+// BOOKING STATE MACHINE (in-memory, per session)
+// ═══════════════════════════════════════
+const bookingSessions = new Map();
+
+const BOOKING_STEPS = ['parent_name', 'child_name', 'child_age', 'service', 'phone', 'preferred_time', 'confirm'];
+
+const BOOKING_QUESTIONS = {
+  parent_name: {
+    en: "What is the parent's full name (first and last)?",
+    ar: "ما هو الاسم الكامل لولي الأمر (الاسم الأول والأخير)؟",
+  },
+  child_name: {
+    en: "What is your child's first name?",
+    ar: "ما هو اسم طفلك؟",
+  },
+  child_age: {
+    en: "How old is your child? (We serve ages 0-18)",
+    ar: "كم عمر طفلك؟ (نخدم الأعمار من 0 إلى 18)",
+  },
+  service: {
+    en: "Which service are you interested in?\n1. Speech & Language Therapy\n2. Occupational Therapy (OT)\n3. Physical Therapy (PT)\n4. ABA Therapy\n5. Developmental Assessment",
+    ar: "أي خدمة تهمك؟\n1. علاج النطق واللغة\n2. العلاج الوظيفي\n3. العلاج الطبيعي\n4. علاج ABA السلوكي\n5. التقييم التطوري",
+  },
+  phone: {
+    en: "What is your phone number? (e.g., 05XXXXXXXX or +966XXXXXXXXX)",
+    ar: "ما هو رقم هاتفك؟ (مثال: 05XXXXXXXX أو +966XXXXXXXXX)",
+  },
+  preferred_time: {
+    en: "When would you prefer? (Sun-Thu, 8AM-6PM)\nYou can say something like 'Sunday morning' or 'any day afternoon'.",
+    ar: "متى تفضل؟ (الأحد-الخميس، 8 صباحاً - 6 مساءً)\nيمكنك قول 'صباح الأحد' أو 'أي يوم بعد الظهر'.",
+  },
+};
+
+const SERVICE_MAP = {
+  '1': 'Speech & Language Therapy',
+  '2': 'Occupational Therapy',
+  '3': 'Physical Therapy',
+  '4': 'ABA Therapy',
+  '5': 'Developmental Assessment',
+  'speech': 'Speech & Language Therapy',
+  'language': 'Speech & Language Therapy',
+  'نطق': 'علاج النطق واللغة',
+  'لغة': 'علاج النطق واللغة',
+  'occupational': 'Occupational Therapy',
+  'ot': 'Occupational Therapy',
+  'وظيفي': 'العلاج الوظيفي',
+  'physical': 'Physical Therapy',
+  'pt': 'Physical Therapy',
+  'طبيعي': 'العلاج الطبيعي',
+  'aba': 'ABA Therapy',
+  'behavior': 'ABA Therapy',
+  'سلوك': 'علاج ABA السلوكي',
+  'سلوكي': 'علاج ABA السلوكي',
+  'assessment': 'Developmental Assessment',
+  'evaluation': 'Developmental Assessment',
+  'تقييم': 'التقييم التطوري',
+};
+
+function validateField(step, value) {
+  const v = value.trim();
+  switch (step) {
+    case 'parent_name':
+      if (v.split(/\s+/).length < 2) return { en: "Please provide your full name (first and last name).", ar: "يرجى تقديم اسمك الكامل (الاسم الأول والأخير)." };
+      if (v.length < 4) return { en: "That doesn't look like a valid name. Please try again.", ar: "هذا لا يبدو اسماً صحيحاً. يرجى المحاولة مرة أخرى." };
+      return null;
+    case 'child_name':
+      if (v.length < 2) return { en: "Please provide your child's name.", ar: "يرجى تقديم اسم طفلك." };
+      if (/^\d+$/.test(v)) return { en: "That doesn't look like a name. Please provide your child's first name.", ar: "هذا لا يبدو اسماً. يرجى تقديم الاسم الأول لطفلك." };
+      return null;
+    case 'child_age': {
+      const num = parseInt(v);
+      if (isNaN(num) && !/\d/.test(v)) return { en: "Please provide a valid age (number between 0 and 18).", ar: "يرجى تقديم عمر صحيح (رقم بين 0 و 18)." };
+      const extracted = parseInt(v.match(/\d+/)?.[0]);
+      if (extracted < 0 || extracted > 18) return { en: "We serve children aged 0-18. Please provide a valid age.", ar: "نخدم الأطفال من عمر 0 إلى 18 سنة. يرجى تقديم عمر صحيح." };
+      return null;
+    }
+    case 'service': {
+      const lower = v.toLowerCase();
+      const match = Object.keys(SERVICE_MAP).find(k => lower.includes(k));
+      if (!match) return { en: "Please choose one of our services:\n1. Speech & Language Therapy\n2. Occupational Therapy\n3. Physical Therapy\n4. ABA Therapy\n5. Developmental Assessment\n\nYou can type the number or name.", ar: "يرجى اختيار أحد خدماتنا:\n1. علاج النطق واللغة\n2. العلاج الوظيفي\n3. العلاج الطبيعي\n4. علاج ABA السلوكي\n5. التقييم التطوري\n\nيمكنك كتابة الرقم أو الاسم." };
+      return null;
+    }
+    case 'phone': {
+      const digits = v.replace(/\D/g, '');
+      if (digits.length < 8) return { en: "Please provide a valid phone number (at least 8 digits).", ar: "يرجى تقديم رقم هاتف صحيح (8 أرقام على الأقل)." };
+      return null;
+    }
+    case 'preferred_time':
+      return null; // Any answer is accepted
+    default:
+      return null;
   }
-  if (process.env.GEMINI_API_KEY) providers.push({
-    url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-    key: process.env.GEMINI_API_KEY,
-    model: 'gemini-2.0-flash',
-    name: 'gemini',
-  });
-  if (process.env.DEEPSEEK_API_KEY) providers.push({
-    url: 'https://api.deepseek.com/v1/chat/completions',
-    key: process.env.DEEPSEEK_API_KEY,
-    model: 'deepseek-chat',
-    name: 'deepseek',
-  });
-  return providers;
+}
+
+function parseService(text) {
+  const lower = text.toLowerCase().trim();
+  for (const [key, val] of Object.entries(SERVICE_MAP)) {
+    if (lower.includes(key)) return val;
+  }
+  return text.trim();
+}
+
+function getBookingSummary(data, lang) {
+  if (lang === 'ar') {
+    return `هذا ملخص معلوماتك:\n• ولي الأمر: ${data.parent_name}\n• اسم الطفل: ${data.child_name}\n• العمر: ${data.child_age}\n• الخدمة: ${data.service}\n• الهاتف: ${data.phone}\n• الوقت المفضل: ${data.preferred_time || 'غير محدد'}\n\nهل المعلومات صحيحة؟ (نعم / لا)`;
+  }
+  return `Here's a summary of your information:\n• Parent: ${data.parent_name}\n• Child: ${data.child_name}\n• Age: ${data.child_age}\n• Service: ${data.service}\n• Phone: ${data.phone}\n• Preferred time: ${data.preferred_time || 'Not specified'}\n\nIs everything correct? (yes / no)`;
 }
 
 // ═══════════════════════════════════════
@@ -41,8 +119,7 @@ function getAllProviders() {
 const INSTANT_RESPONSES = [
   {
     keywords: ['book', 'booking', 'appointment', 'schedule', 'reserve', 'حجز', 'موعد', 'أحجز', 'احجز'],
-    en: "I'd love to help you book an appointment! Let's get started.\n\nWhat is the parent's full name (first and last)?",
-    ar: "يسعدني مساعدتك في حجز موعد! هيا نبدأ.\n\nما هو الاسم الكامل لولي الأمر (الاسم الأول والأخير)؟",
+    startBooking: true,
   },
   {
     keywords: ['why riyada', 'why choose', 'why you', 'why should', 'ليش ريادة', 'لماذا ريادة', 'ليه ريادة'],
@@ -95,7 +172,7 @@ const INSTANT_RESPONSES = [
     ar: "العلاج الوظيفي يساعد الأطفال في:\n• المهارات الحركية الدقيقة (الكتابة، القص، الأزرار)\n• صعوبات المعالجة الحسية\n• مهارات الحياة اليومية والعناية الذاتية\n• الاستعداد المدرسي والكتابة\n\nهل تود حجز تقييم؟",
   },
   {
-    keywords: ['physical therapy', ' pt ', 'walking', 'crawling', 'balance', 'motor', 'طبيعي', 'مشي', 'حركة', 'توازن'],
+    keywords: ['physical therapy', ' pt ', 'walking', 'crawling', 'balance', 'gross motor', 'طبيعي', 'مشي', 'حركة', 'توازن'],
     en: "Our Physical Therapy helps children with:\n• Gross motor delays (crawling, walking, running)\n• Balance and coordination\n• Neurological conditions like cerebral palsy\n• Muscle weakness or tone issues\n\nWould you like to book an assessment?",
     ar: "العلاج الطبيعي يساعد الأطفال في:\n• تأخر المهارات الحركية الكبرى (الزحف، المشي، الركض)\n• التوازن والتنسيق\n• الحالات العصبية مثل الشلل الدماغي\n• ضعف العضلات أو مشاكل التوتر العضلي\n\nهل تود حجز تقييم؟",
   },
@@ -111,8 +188,8 @@ const INSTANT_RESPONSES = [
   },
   {
     keywords: ['my child', 'my son', 'my daughter', 'my kid', 'worried', 'concerned', 'delay', 'late', 'طفلي', 'ابني', 'بنتي', 'ولدي', 'قلق', 'تأخر', 'متأخر'],
-    en: "I understand your concern — you're doing the right thing by reaching out. Based on what you're describing, I'd recommend starting with a Developmental Assessment. It gives us a full picture of your child's strengths and needs, and helps us create a personalized plan.\n\nWould you like to book an assessment, or tell me more about what you're noticing?",
-    ar: "أفهم قلقك — أنت تقوم بالخطوة الصحيحة بالتواصل معنا. بناءً على ما تصفه، أنصح بالبدء بالتقييم التطوري. يعطينا صورة كاملة عن نقاط قوة طفلك واحتياجاته، ويساعدنا في إنشاء خطة مخصصة.\n\nهل تود حجز تقييم، أو تخبرني أكثر عما تلاحظه؟",
+    en: "I understand your concern — you're doing the right thing by reaching out. I'd recommend starting with a Developmental Assessment. It gives us a full picture of your child's strengths and needs, and helps us create a personalized plan.\n\nWould you like to book an assessment?",
+    ar: "أفهم قلقك — أنت تقوم بالخطوة الصحيحة بالتواصل معنا. أنصح بالبدء بالتقييم التطوري. يعطينا صورة كاملة عن نقاط قوة طفلك واحتياجاته، ويساعدنا في إنشاء خطة مخصصة.\n\nهل تود حجز تقييم؟",
   },
 ];
 
@@ -154,6 +231,7 @@ function tryInstantResponse(text, language) {
 
   for (const entry of INSTANT_RESPONSES) {
     if (entry.keywords.some(k => lower.includes(k.toLowerCase()))) {
+      if (entry.startBooking) return '__START_BOOKING__';
       return language === 'ar' ? entry.ar : entry.en;
     }
   }
@@ -162,50 +240,8 @@ function tryInstantResponse(text, language) {
 }
 
 // ═══════════════════════════════════════
-// LLM + BOOKING (only when needed)
+// DATABASE HELPERS
 // ═══════════════════════════════════════
-
-const tools = [
-  {
-    type: 'function',
-    function: {
-      name: 'book_appointment',
-      description: 'ONLY call this after you have explicitly collected AND confirmed ALL 5 required fields from the user: parent_name, child_name, child_age, service, phone. Do NOT call this if any field is missing or was not directly provided by the user.',
-      parameters: {
-        type: 'object',
-        properties: {
-          parent_name:    { type: 'string', description: 'Full name of parent — MUST be explicitly provided by user' },
-          child_name:     { type: 'string', description: 'Child name — MUST be explicitly provided by user' },
-          child_age:      { type: 'string', description: 'Child age — MUST be explicitly provided by user' },
-          service:        { type: 'string', description: 'Therapy service' },
-          phone:          { type: 'string', description: 'Phone number — MUST be explicitly provided by user' },
-          preferred_time: { type: 'string', description: 'Preferred days or times' },
-          notes:          { type: 'string', description: 'Additional notes' },
-          language:       { type: 'string', enum: ['ar', 'en'], description: 'Conversation language' },
-        },
-        required: ['parent_name', 'child_name', 'child_age', 'service', 'phone'],
-      },
-    },
-  },
-];
-
-function cleanResponse(text) {
-  return text
-    .replace(/[一-鿿㐀-䶿豈-﫿]/g, '')
-    .replace(/[　-〿぀-ゟ゠-ヿ]/g, '')
-    .replace(/[가-힯]/g, '')
-    .replace(/[đĐơƠưƯăĂ]/g, '')
-    .replace(/để|của|với|và|không|này|những/g, '')
-    .replace(/我们|你好|的|了|在|是|有|这|那|什么|可以/g, '')
-    .replace(/，/g, '،')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-}
-
-function detectLanguage(messages) {
-  const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content ?? '';
-  return detectLanguageFromText(lastUserMsg);
-}
 
 async function upsertSession({ sessionId, language, pageUrl, userAgent, isNew }) {
   if (!sessionId) return;
@@ -229,82 +265,109 @@ async function saveMsg({ sessionId, role, content, language }) {
   } catch (e) { console.error('[saveMsg]', e.message); }
 }
 
-const VALID_SERVICES = [
-  'speech', 'language', 'نطق', 'لغة',
-  'occupational', 'ot', 'وظيفي',
-  'physical', 'pt', 'طبيعي',
-  'aba', 'behavior', 'سلوك', 'سلوكي',
-  'assessment', 'evaluation', 'تقييم',
-];
-
-function validateAppointment(data) {
-  if (!data.parent_name || data.parent_name.trim().split(/\s+/).length < 2) return 'Invalid parent name';
-  if (!data.child_name || data.child_name.trim().length < 2) return 'Invalid child name';
-  if (!data.child_age) return 'Missing child age';
-  const ageNum = parseInt(data.child_age);
-  if (isNaN(ageNum) && !/\d/.test(data.child_age)) return 'Invalid child age';
-  if (!isNaN(ageNum) && (ageNum < 0 || ageNum > 18)) return 'Child age must be 0-18';
-  if (!data.phone) return 'Missing phone';
-  const digits = data.phone.replace(/\D/g, '');
-  if (digits.length < 8) return 'Phone number too short';
-  if (!data.service) return 'Missing service';
-  const svcLower = data.service.toLowerCase();
-  if (!VALID_SERVICES.some(s => svcLower.includes(s))) return 'Service not recognized';
-  return null;
-}
-
-async function saveAppointment(data, sessionId) {
-  const error = validateAppointment(data);
-  if (error) {
-    console.error('[saveAppointment] Validation failed:', error, data);
-    return false;
-  }
+async function saveAppointmentToDB(data, sessionId, language) {
   try {
     await prisma.chatbotAppointment.create({
       data: {
         sessionId: sessionId ?? null,
-        parentName: data.parent_name.trim(), childName: data.child_name.trim(), childAge: data.child_age || '',
-        service: data.service || '', phone: data.phone.trim(),
-        preferredTime: data.preferred_time ?? null, notes: data.notes ?? null,
-        language: data.language ?? 'ar', status: 'pending', source: 'chatbot',
+        parentName: data.parent_name, childName: data.child_name, childAge: data.child_age,
+        service: data.service, phone: data.phone,
+        preferredTime: data.preferred_time ?? null, notes: null,
+        language: language ?? 'ar', status: 'pending', source: 'chatbot',
       },
     });
     return true;
   } catch (e) { console.error('[saveAppointment]', e.message); return false; }
 }
 
-async function callLLM(providers, messages, useTools = true) {
-  let lastError;
-  for (const provider of providers) {
-    try {
-      const body = {
-        model: provider.model,
-        messages,
-        max_tokens: 1024,
-        temperature: 0.3,
-      };
-      if (useTools && provider.name !== 'gemini') body.tools = tools;
-      if (useTools && provider.name !== 'gemini') body.tool_choice = 'auto';
+// ═══════════════════════════════════════
+// BOOKING FLOW HANDLER
+// ═══════════════════════════════════════
 
-      const res = await fetch(provider.url, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${provider.key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        console.error(`[LLM] ${provider.name} HTTP ${res.status}:`, err.slice(0, 300));
-        lastError = new Error(res.status === 429 ? `${provider.name} rate limited` : `${provider.name} error: ${res.status}`);
-        continue;
-      }
-      return { result: await res.json(), provider };
-    } catch (e) {
-      console.error(`[LLM] ${provider.name} failed:`, e.message);
-      lastError = e;
-    }
+function handleBookingFlow(sessionId, userText, language) {
+  let session = bookingSessions.get(sessionId);
+
+  if (!session) {
+    session = { step: 0, data: {}, language };
+    bookingSessions.set(sessionId, session);
+    const q = BOOKING_QUESTIONS[BOOKING_STEPS[0]];
+    const intro = language === 'ar'
+      ? "يسعدني مساعدتك في حجز موعد! هيا نبدأ.\n\n"
+      : "I'd love to help you book an appointment! Let's get started.\n\n";
+    return intro + q[language];
   }
-  throw lastError || new Error('No LLM providers available');
+
+  const currentStep = BOOKING_STEPS[session.step];
+
+  // Handle confirmation step
+  if (currentStep === 'confirm') {
+    const lower = userText.toLowerCase().trim();
+    const isYes = /^(yes|yeah|yep|y|correct|confirm|نعم|أيوا|ايوا|اي|صح|صحيح|تمام|اكيد|أكيد)$/i.test(lower);
+    const isNo = /^(no|nope|n|wrong|غلط|لا|لأ|خطأ)$/i.test(lower);
+
+    if (isYes) {
+      bookingSessions.delete(sessionId);
+      return '__SAVE_BOOKING__';
+    }
+    if (isNo) {
+      session.step = 0;
+      session.data = {};
+      const q = BOOKING_QUESTIONS[BOOKING_STEPS[0]];
+      const msg = language === 'ar'
+        ? "لا بأس! هيا نبدأ من جديد.\n\n"
+        : "No problem! Let's start over.\n\n";
+      return msg + q[language];
+    }
+    return language === 'ar'
+      ? "يرجى الإجابة بـ 'نعم' أو 'لا'."
+      : "Please answer 'yes' or 'no'.";
+  }
+
+  // Validate current field
+  const error = validateField(currentStep, userText);
+  if (error) {
+    return error[language] || error.en;
+  }
+
+  // Store the validated value
+  if (currentStep === 'service') {
+    session.data[currentStep] = parseService(userText);
+  } else if (currentStep === 'child_age') {
+    const num = userText.match(/\d+/)?.[0];
+    session.data[currentStep] = num ? `${num} years` : userText.trim();
+  } else {
+    session.data[currentStep] = userText.trim();
+  }
+
+  // Move to next step
+  session.step++;
+  const nextStep = BOOKING_STEPS[session.step];
+
+  if (nextStep === 'confirm') {
+    return getBookingSummary(session.data, language);
+  }
+
+  const q = BOOKING_QUESTIONS[nextStep];
+  return q[language];
 }
+
+function startBookingFlow(sessionId, language) {
+  const session = { step: 0, data: {}, language };
+  bookingSessions.set(sessionId, session);
+  const q = BOOKING_QUESTIONS[BOOKING_STEPS[0]];
+  const intro = language === 'ar'
+    ? "يسعدني مساعدتك في حجز موعد! هيا نبدأ.\n\n"
+    : "I'd love to help you book an appointment! Let's get started.\n\n";
+  return intro + q[language];
+}
+
+// Clean up old sessions every 30 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of bookingSessions) {
+    if (now - (val.createdAt || 0) > 30 * 60 * 1000) bookingSessions.delete(key);
+  }
+}, 30 * 60 * 1000);
 
 // ═══════════════════════════════════════
 // MAIN ROUTE
@@ -317,85 +380,67 @@ router.post('/', async (req, res) => {
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: 'Invalid messages' });
     }
-    if (messages.length > 20) {
+    if (messages.length > 30) {
       return res.status(400).json({ error: 'Conversation too long. Please start a new chat.' });
     }
     if (messages.some(m => typeof m.content === 'string' && m.content.length > 2000)) {
       return res.status(400).json({ error: 'Message too long. Please shorten your message.' });
     }
 
-    const language = detectLanguage(messages);
-    await upsertSession({ sessionId: session_id, language, pageUrl: page_url, userAgent: user_agent, isNew: is_new_session });
-
     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
-    if (lastUserMsg) await saveMsg({ sessionId: session_id, role: 'user', content: lastUserMsg.content, language });
+    if (!lastUserMsg) return res.status(400).json({ error: 'No user message found' });
 
-    // TRY INSTANT RESPONSE FIRST (no LLM call = no rate limits)
-    if (lastUserMsg && messages.length <= 2) {
-      const instant = tryInstantResponse(lastUserMsg.content, language);
-      if (instant) {
-        console.log(`[Chat] Instant response for: "${lastUserMsg.content.slice(0, 50)}"`);
-        await saveMsg({ sessionId: session_id, role: 'assistant', content: instant, language });
-        return res.json({ content: [{ type: 'text', text: instant }] });
+    const userText = lastUserMsg.content.trim();
+    const language = detectLanguageFromText(userText);
+
+    await upsertSession({ sessionId: session_id, language, pageUrl: page_url, userAgent: user_agent, isNew: is_new_session });
+    await saveMsg({ sessionId: session_id, role: 'user', content: userText, language });
+
+    // CHECK IF IN ACTIVE BOOKING FLOW
+    if (bookingSessions.has(session_id)) {
+      const reply = handleBookingFlow(session_id, userText, language);
+
+      if (reply === '__SAVE_BOOKING__') {
+        const session = bookingSessions.get(session_id) || { data: {} };
+        const saved = await saveAppointmentToDB(session.data, session_id, language);
+        bookingSessions.delete(session_id);
+        const confirmMsg = saved
+          ? (language === 'ar'
+            ? "تم استلام طلب حجزك بنجاح! ✓\n\nسيتواصل معك فريقنا خلال 24 ساعة لتأكيد الموعد. شكراً لثقتك بمركز ريادة!"
+            : "Your appointment request has been received! ✓\n\nOur team will contact you within 24 hours to confirm. Thank you for choosing Riyada Center!")
+          : (language === 'ar'
+            ? "عذراً، حدث خطأ في حفظ الحجز. يرجى التواصل معنا مباشرة على RC@riyada-ventures.com"
+            : "Sorry, there was an error saving your booking. Please contact us directly at RC@riyada-ventures.com");
+        await saveMsg({ sessionId: session_id, role: 'assistant', content: confirmMsg, language });
+        return res.json({ content: [{ type: 'text', text: confirmMsg }] });
       }
+
+      await saveMsg({ sessionId: session_id, role: 'assistant', content: reply, language });
+      return res.json({ content: [{ type: 'text', text: reply }] });
     }
 
-    // FALL BACK TO LLM for complex questions (booking flow, specific child concerns, etc.)
-    const providers = getAllProviders();
-    if (providers.length === 0) return res.status(500).json({ error: 'Chatbot not configured' });
+    // TRY INSTANT RESPONSE
+    const instant = tryInstantResponse(userText, language);
 
-    const langHint = language === 'en'
-      ? '\n\nIMPORTANT: The user is writing in ENGLISH. You MUST reply ONLY in English. Do NOT reply in Arabic.'
-      : language === 'ar'
-      ? '\n\nIMPORTANT: المستخدم يكتب بالعربية. يجب أن ترد بالعربية فقط.'
-      : '';
-
-    const llmMessages = [
-      { role: 'system', content: getSystemPrompt() + langHint },
-      ...messages,
-    ];
-
-    const { result: response, provider: usedProvider } = await callLLM(providers, llmMessages);
-    const choice = response.choices?.[0]?.message;
-
-    if (!choice) return res.status(500).json({ error: 'No response from AI' });
-
-    if (choice.tool_calls?.length > 0) {
-      const toolCall = choice.tool_calls[0];
-      if (toolCall.function.name === 'book_appointment') {
-        const args = JSON.parse(toolCall.function.arguments);
-        const saved = await saveAppointment(args, session_id);
-
-        const { result: followUp } = await callLLM([usedProvider, ...providers.filter(p => p.name !== usedProvider.name)], [
-          ...llmMessages,
-          choice,
-          {
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: saved
-              ? 'Appointment request saved successfully. Tell the user their request has been received and our team will contact them within 24 hours to confirm the appointment.'
-              : 'Booking FAILED — the information provided is incomplete or invalid. You MUST go back and collect the correct information from the user: parent full name (first + last), child name, child age (0-18), a valid phone number (at least 8 digits), and one of our 5 services. Ask one question at a time. Do NOT attempt to book again until all fields are valid.',
-          },
-        ], false);
-
-        const raw = followUp.choices?.[0]?.message?.content ?? '';
-        const replyText = cleanResponse(raw);
-        if (replyText) await saveMsg({ sessionId: session_id, role: 'assistant', content: replyText, language });
-        return res.json({ content: [{ type: 'text', text: replyText }] });
-      }
+    if (instant === '__START_BOOKING__') {
+      const reply = startBookingFlow(session_id, language);
+      await saveMsg({ sessionId: session_id, role: 'assistant', content: reply, language });
+      return res.json({ content: [{ type: 'text', text: reply }] });
     }
 
-    const raw = choice.content ?? '';
-    const replyText = cleanResponse(raw);
-    if (replyText) await saveMsg({ sessionId: session_id, role: 'assistant', content: replyText, language });
-    res.json({ content: [{ type: 'text', text: replyText }] });
+    if (instant) {
+      await saveMsg({ sessionId: session_id, role: 'assistant', content: instant, language });
+      return res.json({ content: [{ type: 'text', text: instant }] });
+    }
+
+    // DEFAULT: off-topic response (safer than calling rate-limited LLM)
+    const fallback = language === 'ar' ? OFF_TOPIC_AR : OFF_TOPIC_EN;
+    await saveMsg({ sessionId: session_id, role: 'assistant', content: fallback, language });
+    return res.json({ content: [{ type: 'text', text: fallback }] });
+
   } catch (error) {
     console.error('[Chat API Error]', error);
-    const isRateLimit = error.message?.includes('rate limit');
-    const fallback = isRateLimit
-      ? { content: [{ type: 'text', text: 'عذراً، الخدمة مشغولة حالياً. يرجى الانتظار قليلاً والمحاولة مرة أخرى.\n\nSorry, I\'m a bit busy right now. Please wait a moment and try again.' }] }
-      : { error: 'Something went wrong.' };
-    res.status(isRateLimit ? 429 : 500).json(fallback);
+    res.status(500).json({ content: [{ type: 'text', text: 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.\nSorry, something went wrong. Please try again.' }] });
   }
 });
 
