@@ -182,8 +182,14 @@ router.post('/', async (req, res) => {
     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
     if (lastUserMsg) await saveMsg({ sessionId: session_id, role: 'user', content: lastUserMsg.content, language });
 
+    const langHint = language === 'en'
+      ? '\n\nIMPORTANT: The user is writing in ENGLISH. You MUST reply ONLY in English. Do NOT reply in Arabic.'
+      : language === 'ar'
+      ? '\n\nIMPORTANT: المستخدم يكتب بالعربية. يجب أن ترد بالعربية فقط.'
+      : '';
+
     const llmMessages = [
-      { role: 'system', content: getSystemPrompt() },
+      { role: 'system', content: getSystemPrompt() + langHint },
       ...messages,
     ];
 
