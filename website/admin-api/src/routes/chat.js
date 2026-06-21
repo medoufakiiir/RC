@@ -40,6 +40,11 @@ function getAllProviders() {
 // ═══════════════════════════════════════
 const INSTANT_RESPONSES = [
   {
+    keywords: ['book', 'booking', 'appointment', 'schedule', 'reserve', 'حجز', 'موعد', 'أحجز', 'احجز'],
+    en: "I'd love to help you book an appointment! Let's get started.\n\nWhat is the parent's full name (first and last)?",
+    ar: "يسعدني مساعدتك في حجز موعد! هيا نبدأ.\n\nما هو الاسم الكامل لولي الأمر (الاسم الأول والأخير)؟",
+  },
+  {
     keywords: ['why riyada', 'why choose', 'why you', 'why should', 'ليش ريادة', 'لماذا ريادة', 'ليه ريادة'],
     en: "Riyada Center is a specialized pediatric development and rehabilitation center in Riyadh. We offer:\n• 5 specialized therapy services under one roof\n• Qualified and experienced therapists\n• Personalized treatment plans for every child\n• A supportive and family-centered approach\n• Our motto: Connect. Develop. Rise.\n\nWould you like to learn more about our services or book an appointment?",
     ar: "مركز ريادة هو مركز متخصص في تطوير وتأهيل الأطفال في الرياض. نقدم:\n• 5 خدمات علاجية متخصصة تحت سقف واحد\n• معالجين مؤهلين وذوي خبرة\n• خطط علاج مخصصة لكل طفل\n• نهج داعم يركز على الأسرة\n• شعارنا: تواصل. تطور. انطلق.\n\nهل تود معرفة المزيد عن خدماتنا أو حجز موعد؟",
@@ -95,7 +100,7 @@ const INSTANT_RESPONSES = [
     ar: "العلاج الطبيعي يساعد الأطفال في:\n• تأخر المهارات الحركية الكبرى (الزحف، المشي، الركض)\n• التوازن والتنسيق\n• الحالات العصبية مثل الشلل الدماغي\n• ضعف العضلات أو مشاكل التوتر العضلي\n\nهل تود حجز تقييم؟",
   },
   {
-    keywords: ['aba', 'behavior', 'autism', 'autistic', 'asd', 'سلوك', 'سلوكي', 'توحد'],
+    keywords: ['aba', 'behavior', 'autism', 'autistic', 'asd', 'adhd', 'hyperactiv', 'attention deficit', 'سلوك', 'سلوكي', 'توحد', 'فرط حركة', 'تشتت'],
     en: "Our ABA (Applied Behavior Analysis) Therapy helps children with:\n• Autism Spectrum Disorder (ASD) support\n• Behavioral challenges and self-regulation\n• Social skills development\n• Communication through positive behavior\n\nWould you like to book an assessment?",
     ar: "علاج ABA (تحليل السلوك التطبيقي) يساعد الأطفال في:\n• دعم اضطراب طيف التوحد\n• التحديات السلوكية والتنظيم الذاتي\n• تطوير المهارات الاجتماعية\n• التواصل من خلال السلوك الإيجابي\n\nهل تود حجز تقييم؟",
   },
@@ -103,6 +108,11 @@ const INSTANT_RESPONSES = [
     keywords: ['assessment', 'evaluation', 'diagnos', 'check', 'test', 'تقييم', 'فحص', 'تشخيص'],
     en: "Our Developmental Assessment is a comprehensive evaluation that:\n• Identifies your child's strengths and areas needing support\n• Creates a personalized therapy plan\n• Is the best starting point if you're unsure which therapy fits\n\nWould you like to book one?",
     ar: "التقييم التطوري هو تقييم شامل:\n• يحدد نقاط قوة طفلك والمجالات التي تحتاج دعم\n• ينشئ خطة علاج مخصصة\n• هو أفضل نقطة بداية إذا كنت غير متأكد أي علاج يناسب طفلك\n\nهل تود حجز تقييم؟",
+  },
+  {
+    keywords: ['my child', 'my son', 'my daughter', 'my kid', 'worried', 'concerned', 'delay', 'late', 'طفلي', 'ابني', 'بنتي', 'ولدي', 'قلق', 'تأخر', 'متأخر'],
+    en: "I understand your concern — you're doing the right thing by reaching out. Based on what you're describing, I'd recommend starting with a Developmental Assessment. It gives us a full picture of your child's strengths and needs, and helps us create a personalized plan.\n\nWould you like to book an assessment, or tell me more about what you're noticing?",
+    ar: "أفهم قلقك — أنت تقوم بالخطوة الصحيحة بالتواصل معنا. بناءً على ما تصفه، أنصح بالبدء بالتقييم التطوري. يعطينا صورة كاملة عن نقاط قوة طفلك واحتياجاته، ويساعدنا في إنشاء خطة مخصصة.\n\nهل تود حجز تقييم، أو تخبرني أكثر عما تلاحظه؟",
   },
 ];
 
