@@ -8,7 +8,7 @@ function getProvider() {
   if (process.env.GROQ_API_KEY) return {
     url: 'https://api.groq.com/openai/v1/chat/completions',
     key: process.env.GROQ_API_KEY,
-    model: 'llama-3.1-70b-versatile',
+    model: 'llama-3.3-70b-versatile',
     name: 'groq',
   };
   if (process.env.GEMINI_API_KEY) return {
