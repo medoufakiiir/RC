@@ -150,7 +150,7 @@ export default function ChatWidget() {
               background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center',
               justifyContent: 'center', fontSize: '1.1rem', fontWeight: 700, color: '#fff',
               border: '2px solid rgba(255,255,255,0.4)', flexShrink: 0,
-            }}>خ
+            }}>خ</div>
             <div style={{ flex: 1 }}>
               <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem', margin: 0, lineHeight: 1.2 }}>خديجة · Khadija</p>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.72rem', margin: '0.15rem 0 0' }}>مركز ريادة · Riyada Center</p>

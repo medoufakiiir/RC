@@ -33,6 +33,8 @@ const TeamAdmin     = lazy(() => import('./pages/admin/TeamAdmin'));
 const UsersAdmin    = lazy(() => import('./pages/admin/UsersAdmin'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const ChatbotAdmin  = lazy(() => import('./pages/admin/Chatbot'));
+const AnalyticsPage = lazy(() => import('./pages/admin/Analytics'));
+const ContactsPage  = lazy(() => import('./pages/admin/Contacts'));
 const Unauthorized  = lazy(() => import('./pages/admin/Unauthorized'));
 
 function AdminFallback() {
@@ -89,6 +91,8 @@ export default function App() {
             <Route path="services" element={<RoleGuard allowed={['services']}><ServicesAdmin /></RoleGuard>} />
             <Route path="team" element={<RoleGuard allowed={['team']}><TeamAdmin /></RoleGuard>} />
             <Route path="chatbot" element={<RoleGuard allowed={['chatbot']}><ChatbotAdmin /></RoleGuard>} />
+            <Route path="analytics" element={<RoleGuard allowed={['analytics']}><AnalyticsPage /></RoleGuard>} />
+            <Route path="contacts" element={<RoleGuard allowed={['contacts']}><ContactsPage /></RoleGuard>} />
             <Route path="users" element={<RoleGuard allowed={['users']}><UsersAdmin /></RoleGuard>} />
           </Route>
 

@@ -3,25 +3,29 @@ import { Outlet, NavLink, useNavigate, useLocation, Link, Navigate } from 'react
 import {
   LayoutDashboard, CalendarCheck, MessageSquare, Settings2,
   Users, Stethoscope, LogOut, Menu, X, ChevronRight, Bot, Bell, Shield,
+  BarChart3, Contact,
 } from 'lucide-react';
 import { adminApi, getStoredAdmin, ROLE_NAV } from '../../services/adminApi';
 import type { Role } from '../../services/adminApi';
 
 const ALL_NAV = [
-  { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard',  key: 'dashboard' },
-  { to: '/admin/bookings',  icon: CalendarCheck,   label: 'Bookings',   key: 'bookings'  },
-  { to: '/admin/messages',  icon: MessageSquare,   label: 'Messages',   key: 'messages'  },
-  { to: '/admin/services',  icon: Stethoscope,     label: 'Services',   key: 'services'  },
-  { to: '/admin/team',      icon: Users,           label: 'Team',       key: 'team'      },
-  { to: '/admin/chatbot',   icon: Bot,             label: 'Chatbot',    key: 'chatbot'   },
-  { to: '/admin/users',     icon: Shield,          label: 'Users',      key: 'users'     },
-  { to: '/admin/settings',  icon: Settings2,       label: 'Settings',   key: 'settings'  },
+  { to: '/admin/dashboard',  icon: LayoutDashboard, label: 'Dashboard',  key: 'dashboard'  },
+  { to: '/admin/bookings',   icon: CalendarCheck,   label: 'Bookings',   key: 'bookings'   },
+  { to: '/admin/messages',   icon: MessageSquare,   label: 'Messages',   key: 'messages'   },
+  { to: '/admin/services',   icon: Stethoscope,     label: 'Services',   key: 'services'   },
+  { to: '/admin/team',       icon: Users,           label: 'Team',       key: 'team'       },
+  { to: '/admin/chatbot',    icon: Bot,             label: 'Chatbot',    key: 'chatbot'    },
+  { to: '/admin/analytics',  icon: BarChart3,       label: 'Analytics',  key: 'analytics'  },
+  { to: '/admin/contacts',   icon: Contact,         label: 'Contacts',   key: 'contacts'   },
+  { to: '/admin/users',      icon: Shield,          label: 'Users',      key: 'users'      },
+  { to: '/admin/settings',   icon: Settings2,       label: 'Settings',   key: 'settings'   },
 ];
 
 const ROLE_LABELS: Record<Role, string> = {
   SUPER_ADMIN: 'Super Admin',
   MANAGER: 'Manager',
   RECEPTIONIST: 'Receptionist',
+  MARKETING: 'Marketing',
 };
 
 const IDLE_MS = 10 * 60 * 1000;

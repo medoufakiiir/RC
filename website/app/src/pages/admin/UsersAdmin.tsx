@@ -11,6 +11,7 @@ const ROLE_BADGE: Record<string, string> = {
   SUPER_ADMIN:  'bg-purple-500/15 text-purple-400',
   MANAGER:      'bg-brand-blue/15 text-brand-blue',
   RECEPTIONIST: 'bg-green-500/15 text-green-400',
+  MARKETING:    'bg-orange-500/15 text-orange-400',
 };
 
 function UserForm({ initial, isCreate, availableRoles, onSave, onCancel }: {
@@ -77,7 +78,7 @@ export default function UsersAdmin() {
   const admin = getStoredAdmin();
   const myRole = admin?.role ?? 'RECEPTIONIST';
   const availableRoles: string[] = myRole === 'SUPER_ADMIN'
-    ? ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST']
+    ? ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST', 'MARKETING']
     : ['RECEPTIONIST'];
 
   useEffect(() => {
