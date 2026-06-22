@@ -85,8 +85,8 @@ export const adminApi = {
   exportContacts: (source?: string) => `${BASE}/admin/contacts/export?source=${source || 'all'}&token=${getToken()}`,
 
   // Calendar
-  calendarBookings: (start: string, end: string) =>
-    req<CalendarEvent[]>('GET', `/admin/calendar/bookings?start=${start}&end=${end}`),
+  calendarBookings: (_start?: string, _end?: string) =>
+    req<CalendarEvent[]>('GET', '/admin/calendar/bookings'),
   calendarBookingsUrl: () => `${BASE}/admin/calendar/bookings?token=${getToken()}`,
   calendarStatus: () => req<CalendarStatus>('GET', '/admin/calendar/status'),
   calendarGoogleConnect: () => req<{ url: string }>('GET', '/admin/calendar/google/connect'),

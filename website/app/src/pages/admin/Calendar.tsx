@@ -40,10 +40,10 @@ export default function Calendar() {
   const [syncing, setSyncing] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
 
-  const loadEvents = useCallback(async (start: string, end: string) => {
+  const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await adminApi.calendarBookings(start, end);
+      const data = await adminApi.calendarBookings('', '');
       setEvents(data);
     } catch { /* ignore */ }
     setLoading(false);
@@ -51,15 +51,11 @@ export default function Calendar() {
 
   useEffect(() => {
     adminApi.calendarStatus().then(setCalStatus).catch(() => {});
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const end = new Date(now.getFullYear(), now.getMonth() + 2, 0).toISOString();
-    loadEvents(start, end);
+    loadEvents();
   }, [loadEvents]);
 
   function handleDatesSet(arg: DatesSetArg) {
     setTitle(arg.view.title);
-    loadEvents(arg.startStr, arg.endStr);
   }
 
   function handleEventClick(info: EventClickArg) {
