@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /403
+
+Sitemap: https://rc.riyada-ventures.com/sitemap.xml

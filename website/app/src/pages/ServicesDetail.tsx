@@ -1,6 +1,10 @@
 import { MessageCircle, FileText, Target, Lightbulb, CheckCircle2 } from 'lucide-react';
 import ServicePageTemplate from '../components/services/ServicePageTemplate';
 import type { ServiceStep, ServiceFaq, ServiceCondition } from '../components/services/ServicePageTemplate';
+import SEO from '../components/SEO';
+import { ServiceSchema, BreadcrumbSchema, FAQSchema } from '../components/StructuredData';
+import { useLanguage } from '../LanguageProvider';
+import { getPageSEO } from '../seo';
 
 const whatWeDo = [
   { en: 'Articulation and pronunciation therapy', ar: 'علاج النطق والنطق الصحيح' },
@@ -102,8 +106,16 @@ const heroVisual = (
 );
 
 export default function ServicesDetail() {
+  const { locale } = useLanguage();
+  const seo = getPageSEO('speechTherapy', locale)!;
+
   return (
-    <ServicePageTemplate
+    <>
+      <SEO {...seo} />
+      <ServiceSchema name="Speech & Language Therapy" description={seo.description} url="/services/speech-language-therapy" />
+      <BreadcrumbSchema items={[{ name: locale === 'ar' ? 'الرئيسية' : 'Home', url: '/' }, { name: locale === 'ar' ? 'الخدمات' : 'Services', url: '/services' }, { name: locale === 'ar' ? 'علاج النطق واللغة' : 'Speech & Language Therapy', url: '/services/speech-language-therapy' }]} />
+      <FAQSchema items={faqs.map(f => ({ question: locale === 'ar' ? f.qAR : f.q, answer: locale === 'ar' ? f.aAR : f.a }))} />
+      <ServicePageTemplate
       heroBgStyle={{ backgroundColor: '#DDBAE8' }}
       heroVisual={heroVisual}
       tagIcon={MessageCircle}
@@ -133,5 +145,6 @@ export default function ServicesDetail() {
       }}
       ctaMascotSrc="/assets/mascots/language-explorer.png"
     />
+    </>
   );
 }

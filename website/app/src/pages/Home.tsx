@@ -6,10 +6,20 @@ import WhyRiyada from '../sections/WhyRiyada';
 import MarqueeSection from '../sections/MarqueeSection';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import SEO from '../components/SEO';
+import { OrganizationSchema, WebsiteSchema } from '../components/StructuredData';
+import { useLanguage } from '../LanguageProvider';
+import { getPageSEO } from '../seo';
 
 export default function Home() {
+  const { locale } = useLanguage();
+  const seo = getPageSEO('home', locale)!;
+
   return (
     <div className="min-h-screen">
+      <SEO {...seo} />
+      <OrganizationSchema />
+      <WebsiteSchema />
       <Navbar />
       <HeroSection />
       <StatsBar />

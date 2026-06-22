@@ -5,6 +5,9 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useLanguage } from '../LanguageProvider';
 import { GlowCard } from '@/components/ui/spotlight-card';
+import SEO from '../components/SEO';
+import { BreadcrumbSchema } from '../components/StructuredData';
+import { getPageSEO } from '../seo';
 
 const values = [
   {
@@ -104,10 +107,12 @@ const team = [
 
 export default function About() {
   const { locale, t } = useLanguage();
-
+  const seo = getPageSEO('about', locale)!;
 
   return (
     <div className="min-h-screen bg-bg-base">
+      <SEO {...seo} />
+      <BreadcrumbSchema items={[{ name: locale === 'ar' ? 'الرئيسية' : 'Home', url: '/' }, { name: locale === 'ar' ? 'من نحن' : 'About', url: '/about' }]} />
       <Navbar />
 
       {/* Hero with diagonal split */}

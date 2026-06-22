@@ -4,6 +4,8 @@ import { Scale, ArrowLeft, ArrowRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useLanguage } from '../LanguageProvider';
+import SEO from '../components/SEO';
+import { getPageSEO } from '../seo';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -130,8 +132,11 @@ export default function TermsPage() {
   const isAR = locale === 'ar';
   const BackIcon = isAR ? ArrowRight : ArrowLeft;
 
+  const seo = getPageSEO('terms', locale)!;
+
   return (
     <div className="min-h-screen bg-[#0D0D1A] text-white">
+      <SEO {...seo} noindex />
       <Navbar />
 
       {/* Hero */}

@@ -20,6 +20,8 @@ import { addBooking } from '../lib/bookingsStore';
 import { submitBooking } from '../services/adminApi';
 import { useLanguage } from '../LanguageProvider';
 import { useActiveServices } from '../hooks/useActiveServices';
+import SEO from '../components/SEO';
+import { getPageSEO } from '../seo';
 
 const allServices = [
   {
@@ -174,9 +176,12 @@ export default function Booking() {
     ? ['أحد', 'إثن', 'ثلث', 'أرب', 'خمس', 'جمع', 'سبت']
     : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+  const seo = getPageSEO('booking', locale)!;
+
   if (confirmed) {
     return (
       <div className="min-h-screen bg-bg-base">
+        <SEO {...seo} />
         <Navbar />
         <div className="pt-28 pb-16 flex items-center justify-center min-h-[80vh]">
           <motion.div
@@ -271,6 +276,7 @@ export default function Booking() {
 
   return (
     <div className="min-h-screen bg-bg-base">
+      <SEO {...seo} />
       <Navbar />
 
       <div className="pt-28 pb-16">

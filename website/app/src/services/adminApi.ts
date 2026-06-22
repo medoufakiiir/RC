@@ -39,6 +39,7 @@ export const adminApi = {
   booking: (id: string) => req<Booking>('GET', `/admin/bookings/${id}`),
   updateBooking: (id: string, data: Partial<Booking>) => req<Booking>('PATCH', `/admin/bookings/${id}`, data),
   deleteBooking: (id: string) => req('DELETE', `/admin/bookings/${id}`),
+  bulkDeleteBookings: (ids: string[]) => req('POST', '/admin/bookings/bulk-delete', { ids }),
 
   // Messages
   messages: (params?: MessageParams) =>
@@ -47,6 +48,7 @@ export const adminApi = {
   markAllRead: () => req('PATCH', '/admin/messages/mark-all-read', {}),
   updateMessage: (id: string, data: Partial<ContactMessage>) => req<ContactMessage>('PATCH', `/admin/messages/${id}`, data),
   deleteMessage: (id: string) => req('DELETE', `/admin/messages/${id}`),
+  bulkDeleteMessages: (ids: string[]) => req('POST', '/admin/messages/bulk-delete', { ids }),
 
   // Services
   services: () => req<Service[]>('GET', '/admin/services'),
@@ -69,6 +71,11 @@ export const adminApi = {
   // Settings
   settings: () => req<Record<string, string>>('GET', '/admin/settings'),
   updateSettings: (data: Record<string, string>) => req('PATCH', '/admin/settings', data),
+
+  // Permissions
+  permissions: () => req<{ chatbot: boolean }>('GET', '/admin/settings/permissions'),
+  chatbotPermissions: () => req<{ id: string; name: string; email: string; role: string; isActive: boolean; chatbotEnabled: boolean }[]>('GET', '/admin/settings/permissions/chatbot'),
+  toggleChatbotAccess: (userId: string, enabled: boolean) => req('PATCH', `/admin/settings/permissions/chatbot/${userId}`, { enabled }),
 };
 
 // Public form submission

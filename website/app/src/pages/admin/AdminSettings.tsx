@@ -1,6 +1,58 @@
 import { useEffect, useState } from 'react';
 import { adminApi, getStoredAdmin } from '../../services/adminApi';
 
+interface PermUser { id: string; name: string; email: string; role: string; isActive: boolean; chatbotEnabled: boolean }
+
+function ChatbotPermissions() {
+  const [users, setUsers] = useState<PermUser[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    adminApi.chatbotPermissions().then(u => { setUsers(u); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
+  async function toggle(userId: string, enabled: boolean) {
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, chatbotEnabled: enabled } : u));
+    await adminApi.toggleChatbotAccess(userId, enabled);
+  }
+
+  if (loading) return <div className="text-white/30 text-sm py-4">Loading permissions...</div>;
+  if (users.length === 0) return null;
+
+  return (
+    <div className="bg-[#0d1428] border border-white/8 rounded-xl p-5 space-y-3">
+      <div className="mb-3">
+        <h2 className="text-sm font-medium text-white">Chatbot Access Control</h2>
+        <p className="text-xs text-white/40 mt-1">Enable or disable chatbot panel access for each user</p>
+      </div>
+      {users.map(u => (
+        <label key={u.id} className="flex items-center justify-between py-3 px-4 bg-white/3 rounded-lg cursor-pointer border border-white/5 hover:border-white/10 transition">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-brand-blue/20 flex items-center justify-center text-xs font-bold text-brand-blue">
+              {u.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div className="text-sm text-white font-medium">{u.name}</div>
+              <div className="text-xs text-white/40">{u.email} · {u.role}{!u.isActive ? ' · Inactive' : ''}</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-xs font-medium ${u.chatbotEnabled ? 'text-green-400' : 'text-red-400'}`}>
+              {u.chatbotEnabled ? 'Enabled' : 'Disabled'}
+            </span>
+            <input
+              type="checkbox"
+              className="accent-brand-blue w-4 h-4"
+              checked={u.chatbotEnabled}
+              onChange={e => toggle(u.id, e.target.checked)}
+            />
+          </div>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 export default function AdminSettings() {
   const admin = getStoredAdmin();
   const isSuperAdmin = admin?.role === 'SUPER_ADMIN';
@@ -74,6 +126,9 @@ export default function AdminSettings() {
   return (
     <div className="space-y-8 max-w-2xl">
       <h1 className="text-xl font-semibold text-white">Settings</h1>
+
+      {/* User Permissions — SUPER_ADMIN only */}
+      {isSuperAdmin && <ChatbotPermissions />}
 
       {/* Site Settings — SUPER_ADMIN only */}
       {isSuperAdmin && (

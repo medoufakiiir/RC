@@ -6,6 +6,9 @@ import Footer from '../components/Footer';
 import { useLanguage } from '../LanguageProvider';
 import { GlowCard } from '@/components/ui/spotlight-card';
 import { useActiveServices } from '../hooks/useActiveServices';
+import SEO from '../components/SEO';
+import { BreadcrumbSchema } from '../components/StructuredData';
+import { getPageSEO } from '../seo';
 
 const allServices = [
   {
@@ -109,9 +112,12 @@ export default function ServicesPage() {
     ? allServices.filter(s => slugs.some(slug => s.href.includes(slug)))
     : allServices;
 
+  const seo = getPageSEO('services', locale)!;
 
   return (
     <div className="min-h-screen bg-bg-base">
+      <SEO {...seo} />
+      <BreadcrumbSchema items={[{ name: locale === 'ar' ? 'الرئيسية' : 'Home', url: '/' }, { name: locale === 'ar' ? 'الخدمات' : 'Services', url: '/services' }]} />
       <Navbar />
 
       {/* Hero */}

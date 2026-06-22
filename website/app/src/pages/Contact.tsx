@@ -7,6 +7,9 @@ import { addContactMessage } from '../lib/contactStore';
 import { submitContact } from '../services/adminApi';
 import { useLanguage } from '../LanguageProvider';
 import { GlowCard } from '@/components/ui/spotlight-card';
+import SEO from '../components/SEO';
+import { BreadcrumbSchema } from '../components/StructuredData';
+import { getPageSEO } from '../seo';
 
 const serviceOptions = [
   { value: 'Assessment', labelAR: 'التقييم' },
@@ -79,8 +82,12 @@ export default function Contact() {
     setErrors((current) => ({ ...current, [field]: '' }));
   };
 
+  const seo = getPageSEO('contact', locale)!;
+
   return (
     <div className="min-h-screen bg-bg-base">
+      <SEO {...seo} />
+      <BreadcrumbSchema items={[{ name: locale === 'ar' ? 'الرئيسية' : 'Home', url: '/' }, { name: locale === 'ar' ? 'تواصل معنا' : 'Contact', url: '/contact' }]} />
       <Navbar />
 
       <main className="pt-28 pb-16">

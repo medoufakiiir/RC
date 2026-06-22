@@ -1,6 +1,10 @@
 import { Hand, FileText, Target, Lightbulb, CheckCircle2 } from 'lucide-react';
 import ServicePageTemplate from '../components/services/ServicePageTemplate';
 import type { ServiceStep, ServiceFaq, ServiceCondition } from '../components/services/ServicePageTemplate';
+import SEO from '../components/SEO';
+import { ServiceSchema, BreadcrumbSchema, FAQSchema } from '../components/StructuredData';
+import { useLanguage } from '../LanguageProvider';
+import { getPageSEO } from '../seo';
 
 const whatWeDo = [
   { en: 'Fine motor skill development', ar: 'تنمية المهارات الحركية الدقيقة' },
@@ -102,8 +106,16 @@ const heroVisual = (
 );
 
 export default function OccupationalTherapyPage() {
+  const { locale } = useLanguage();
+  const seo = getPageSEO('occupationalTherapy', locale)!;
+
   return (
-    <ServicePageTemplate
+    <>
+      <SEO {...seo} />
+      <ServiceSchema name="Occupational Therapy" description={seo.description} url="/services/occupational-therapy" />
+      <BreadcrumbSchema items={[{ name: locale === 'ar' ? 'الرئيسية' : 'Home', url: '/' }, { name: locale === 'ar' ? 'الخدمات' : 'Services', url: '/services' }, { name: locale === 'ar' ? 'العلاج الوظيفي' : 'Occupational Therapy', url: '/services/occupational-therapy' }]} />
+      <FAQSchema items={faqs.map(f => ({ question: locale === 'ar' ? f.qAR : f.q, answer: locale === 'ar' ? f.aAR : f.a }))} />
+      <ServicePageTemplate
       heroBgStyle={{ backgroundColor: '#C8F5B5' }}
       heroVisual={heroVisual}
       tagIcon={Hand}
@@ -131,5 +143,6 @@ export default function OccupationalTherapyPage() {
       }}
       ctaMascotSrc="/assets/mascots/skill-builder.png"
     />
+    </>
   );
 }

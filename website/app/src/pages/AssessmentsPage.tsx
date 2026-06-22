@@ -1,6 +1,10 @@
 import { ClipboardList, FileText, Target, Lightbulb, CheckCircle2 } from 'lucide-react';
 import ServicePageTemplate from '../components/services/ServicePageTemplate';
 import type { ServiceStep, ServiceFaq, ServiceCondition } from '../components/services/ServicePageTemplate';
+import SEO from '../components/SEO';
+import { ServiceSchema, BreadcrumbSchema, FAQSchema } from '../components/StructuredData';
+import { useLanguage } from '../LanguageProvider';
+import { getPageSEO } from '../seo';
 
 const whatWeDo = [
   { en: 'Developmental screening', ar: 'الفحص النمائي' },
@@ -100,8 +104,16 @@ const heroVisual = (
 );
 
 export default function AssessmentsPage() {
+  const { locale } = useLanguage();
+  const seo = getPageSEO('assessments', locale)!;
+
   return (
-    <ServicePageTemplate
+    <>
+      <SEO {...seo} />
+      <ServiceSchema name="Assessments & Consultations" description={seo.description} url="/services/assessments" />
+      <BreadcrumbSchema items={[{ name: locale === 'ar' ? 'الرئيسية' : 'Home', url: '/' }, { name: locale === 'ar' ? 'الخدمات' : 'Services', url: '/services' }, { name: locale === 'ar' ? 'التقييمات والاستشارات' : 'Assessments', url: '/services/assessments' }]} />
+      <FAQSchema items={faqs.map(f => ({ question: locale === 'ar' ? f.qAR : f.q, answer: locale === 'ar' ? f.aAR : f.a }))} />
+      <ServicePageTemplate
       heroBgStyle={{ backgroundColor: '#FEF7CD' }}
       heroVisual={heroVisual}
       tagIcon={ClipboardList}
@@ -128,5 +140,6 @@ export default function AssessmentsPage() {
         ar: 'هل أنت مستعد لفهم طفلك بشكل أعمق؟',
       }}
     />
+    </>
   );
 }

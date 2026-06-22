@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://rc.riyada-ventures.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rc.riyada-ventures.com/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://rc.riyada-ventures.com/" />
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/services</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rc.riyada-ventures.com/services" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://rc.riyada-ventures.com/services" />
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/services/assessments</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rc.riyada-ventures.com/services/assessments" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://rc.riyada-ventures.com/services/assessments" />
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/services/aba-therapy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rc.riyada-ventures.com/services/aba-therapy" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://rc.riyada-ventures.com/services/aba-therapy" />
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/services/speech-language-therapy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rc.riyada-ventures.com/services/speech-language-therapy" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://rc.riyada-ventures.com/services/speech-language-therapy" />
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/services/occupational-therapy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rc.riyada-ventures.com/services/occupational-therapy" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://rc.riyada-ventures.com/services/occupational-therapy" />
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/booking</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rc.riyada-ventures.com/booking" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://rc.riyada-ventures.com/booking" />
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rc.riyada-ventures.com/about" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://rc.riyada-ventures.com/about" />
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://rc.riyada-ventures.com/contact" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://rc.riyada-ventures.com/contact" />
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://rc.riyada-ventures.com/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

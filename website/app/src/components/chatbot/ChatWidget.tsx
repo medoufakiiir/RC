@@ -95,9 +95,15 @@ export default function ChatWidget() {
       });
 
       isNewSessionRef.current = false;
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data = await res.json();
+      if (!res.ok) {
+        const fallback = data?.content?.[0]?.text
+          || 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.\nSorry, something went wrong. Please try again.';
+        setMessages(prev => [...prev, { id: generateId(), role: 'assistant', content: fallback }]);
+        return;
+      }
+
       const replyText =
         data.content
           ?.filter((b: { type: string }) => b.type === 'text')
@@ -110,7 +116,7 @@ export default function ChatWidget() {
       console.error('[ChatWidget]', err);
       setMessages(prev => [
         ...prev,
-        { id: generateId(), role: 'assistant', content: 'عذراً، حدث خطأ في الاتصال.\nSorry, connection error.' },
+        { id: generateId(), role: 'assistant', content: 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.\nSorry, connection error. Please try again.' },
       ]);
     } finally {
       setIsLoading(false);

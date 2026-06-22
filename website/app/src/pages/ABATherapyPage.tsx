@@ -1,6 +1,10 @@
 import { Brain, FileText, Target, Lightbulb, CheckCircle2 } from 'lucide-react';
 import ServicePageTemplate from '../components/services/ServicePageTemplate';
 import type { ServiceStep, ServiceFaq, ServiceCondition } from '../components/services/ServicePageTemplate';
+import SEO from '../components/SEO';
+import { ServiceSchema, BreadcrumbSchema, FAQSchema } from '../components/StructuredData';
+import { useLanguage } from '../LanguageProvider';
+import { getPageSEO } from '../seo';
 
 const whatWeDo = [
   { en: 'Individualized behavior intervention plans', ar: 'خطط تدخل سلوكي فردية' },
@@ -101,8 +105,16 @@ const heroVisual = (
 );
 
 export default function ABATherapyPage() {
+  const { locale } = useLanguage();
+  const seo = getPageSEO('abaTherapy', locale)!;
+
   return (
-    <ServicePageTemplate
+    <>
+      <SEO {...seo} />
+      <ServiceSchema name="ABA / Behavior Therapy" description={seo.description} url="/services/aba-therapy" />
+      <BreadcrumbSchema items={[{ name: locale === 'ar' ? 'الرئيسية' : 'Home', url: '/' }, { name: locale === 'ar' ? 'الخدمات' : 'Services', url: '/services' }, { name: locale === 'ar' ? 'علاج ABA' : 'ABA Therapy', url: '/services/aba-therapy' }]} />
+      <FAQSchema items={faqs.map(f => ({ question: locale === 'ar' ? f.qAR : f.q, answer: locale === 'ar' ? f.aAR : f.a }))} />
+      <ServicePageTemplate
       heroBgStyle={{ backgroundColor: '#EEFF99' }}
       heroVisual={heroVisual}
       tagIcon={Brain}
@@ -130,5 +142,6 @@ export default function ABATherapyPage() {
       }}
       ctaMascotSrc="/assets/mascots/behavior-guide.png"
     />
+    </>
   );
 }

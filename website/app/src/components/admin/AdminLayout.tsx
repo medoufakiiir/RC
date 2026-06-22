@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
 import {
   LayoutDashboard, CalendarCheck, MessageSquare, Settings2,
@@ -34,10 +34,15 @@ export default function AdminLayout() {
   const timerRef  = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const notifRef  = useRef<HTMLDivElement>(null);
 
+  const [chatbotEnabled, setChatbotEnabled] = useState(true);
   const admin = getStoredAdmin();
   const role  = admin?.role ?? 'RECEPTIONIST';
   const allowed = ROLE_NAV[role] ?? ROLE_NAV.RECEPTIONIST;
-  const NAV = ALL_NAV.filter(n => allowed.includes(n.key));
+  const NAV = ALL_NAV.filter(n => {
+    if (!allowed.includes(n.key)) return false;
+    if (n.key === 'chatbot' && role !== 'SUPER_ADMIN' && !chatbotEnabled) return false;
+    return true;
+  });
 
   useEffect(() => {
     function doLogout() {
@@ -65,7 +70,14 @@ export default function AdminLayout() {
         setNotif({ messages: data.stats.unreadMessages, bookings: data.stats.pendingBookings });
       } catch { /* ignore */ }
     }
+    async function loadPerms() {
+      try {
+        const perms = await adminApi.permissions();
+        setChatbotEnabled(perms.chatbot);
+      } catch { /* ignore */ }
+    }
     poll();
+    loadPerms();
     const iv = setInterval(poll, 60_000);
     return () => clearInterval(iv);
   }, []);
@@ -180,7 +192,9 @@ export default function AdminLayout() {
         </header>
 
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
-          <Outlet />
+          <Suspense fallback={<div className="flex items-center justify-center h-40 text-white/30 text-sm">Loading…</div>}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
