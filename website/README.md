@@ -8,7 +8,7 @@ your-nextjs-project/
 │   └── chatbot.ts                        ← TypeScript types
 ├── lib/
 │   └── chatbot/
-│       ├── system-prompt.ts              ← Raya's personality & knowledge
+│       ├── system-prompt.ts              ← Khadija's personality & knowledge
 │       └── save-appointment.ts           ← Supabase appointment saving
 ├── app/
 │   └── api/
@@ -89,7 +89,7 @@ That's it! The chatbot will appear on every page. ✅
 
 ---
 
-## What Raya Can Do
+## What Khadija Can Do
 
 | Feature                            | Status |
 |------------------------------------|--------|

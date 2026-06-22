@@ -314,7 +314,7 @@ export default function ChatbotAdmin() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: white }}>Raya Chatbot</h1>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: white }}>Khadija Chatbot</h1>
           <p style={{ margin: '4px 0 0', color: muted, fontSize: 13 }}>Full control over conversations, appointments & contacts</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

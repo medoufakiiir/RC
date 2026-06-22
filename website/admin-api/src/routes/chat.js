@@ -193,11 +193,11 @@ const INSTANT_RESPONSES = [
   },
 ];
 
-const OFF_TOPIC_EN = "I'm Raya, Riyada Center's assistant. I can only help with our services, booking appointments, or child development questions related to our center. How can I help you?";
-const OFF_TOPIC_AR = "أنا رايا، مساعدة مركز ريادة. أستطيع مساعدتك فقط بما يخص خدمات المركز، حجز المواعيد، أو استفسارات عن تطور الأطفال. كيف أقدر أساعدك؟";
+const OFF_TOPIC_EN = "I'm Khadija, Riyada Center's assistant. I can only help with our services, booking appointments, or child development questions related to our center. How can I help you?";
+const OFF_TOPIC_AR = "أنا خديجة، مساعدة مركز ريادة. أستطيع مساعدتك فقط بما يخص خدمات المركز، حجز المواعيد، أو استفسارات عن تطور الأطفال. كيف أقدر أساعدك؟";
 
-const GREETING_EN = "Welcome to Riyada Center! I'm Raya, your assistant. I can help you with:\n• Learning about our therapy services\n• Booking an appointment\n• Answering questions about child development\n\nHow can I help you today?";
-const GREETING_AR = "أهلاً بك في مركز ريادة! أنا رايا، مساعدتك. أقدر أساعدك في:\n• التعرف على خدماتنا العلاجية\n• حجز موعد\n• الإجابة على أسئلة عن تطور الأطفال\n\nكيف أقدر أساعدك اليوم؟";
+const GREETING_EN = "Welcome to Riyada Center! I'm Khadija, your assistant. I can help you with:\n• Learning about our therapy services\n• Booking an appointment\n• Answering questions about child development\n\nHow can I help you today?";
+const GREETING_AR = "أهلاً بك في مركز ريادة! أنا خديجة، مساعدتك. أقدر أساعدك في:\n• التعرف على خدماتنا العلاجية\n• حجز موعد\n• الإجابة على أسئلة عن تطور الأطفال\n\nكيف أقدر أساعدك اليوم؟";
 
 const OFF_TOPIC_KEYWORDS = [
   'weather', 'recipe', 'cook', 'game', 'play', 'movie', 'music', 'song',

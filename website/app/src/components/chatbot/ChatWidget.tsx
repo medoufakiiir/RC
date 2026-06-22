@@ -34,7 +34,7 @@ const WELCOME: ChatMessage = {
   id: 'welcome',
   role: 'assistant',
   content:
-    'مرحباً بك في مركز ريادة! 👋 أنا رايا، مساعدتك الذكية.\n\nهل تبحث عن خدماتنا، تريد حجز موعد، أو لديك سؤال؟ أنا هنا للمساعدة!\n\n─────────────\n\nWelcome to Riyada Center! 👋 I\'m Raya, your AI assistant.\n\nLooking for our services, want to book an appointment, or have a question? I\'m here to help!',
+    'مرحباً بك في مركز ريادة! 👋 أنا خديجة، مساعدتك الذكية.\n\nهل تبحث عن خدماتنا، تريد حجز موعد، أو لديك سؤال؟ أنا هنا للمساعدة!\n\n─────────────\n\nWelcome to Riyada Center! 👋 I\'m Khadija, your AI assistant.\n\nLooking for our services, want to book an appointment, or have a question? I\'m here to help!',
 };
 
 const QUICK_REPLIES = [
@@ -150,9 +150,9 @@ export default function ChatWidget() {
               background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center',
               justifyContent: 'center', fontSize: '1.1rem', fontWeight: 700, color: '#fff',
               border: '2px solid rgba(255,255,255,0.4)', flexShrink: 0,
-            }}>ر</div>
+            }}>خ
             <div style={{ flex: 1 }}>
-              <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem', margin: 0, lineHeight: 1.2 }}>رايا · Raya</p>
+              <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem', margin: 0, lineHeight: 1.2 }}>خديجة · Khadija</p>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.72rem', margin: '0.15rem 0 0' }}>مركز ريادة · Riyada Center</p>
             </div>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 0 2px rgba(74,222,128,0.4)', display: 'inline-block' }} />
@@ -197,7 +197,7 @@ export default function ChatWidget() {
                   {[0, 150, 300].map(d => (
                     <span key={d} style={{
                       width: 7, height: 7, borderRadius: '50%', background: '#3355EE',
-                      display: 'inline-block', animation: `raya-bounce 1.2s ${d}ms infinite`,
+                      display: 'inline-block', animation: `khadija-bounce 1.2s ${d}ms infinite`,
                     }} />
                   ))}
                 </div>
@@ -298,7 +298,7 @@ export default function ChatWidget() {
         )}
       </button>
 
-      <style>{`@keyframes raya-bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}`}</style>
+      <style>{`@keyframes khadija-bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}`}</style>
     </>
   );
 }

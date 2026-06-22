@@ -19,7 +19,7 @@ const WELCOME_MESSAGE: ChatMessage = {
   id: 'welcome',
   role: 'assistant',
   content:
-    'مرحباً بك في مركز ريادة! 👋 أنا رايا، مساعدتك الذكية.\n\nهل تبحث عن خدماتنا، تريد حجز موعد، أو لديك سؤال؟ أنا هنا للمساعدة!\n\n─────────────────\n\nWelcome to Riyada Center! 👋 I\'m Raya, your AI assistant.\n\nLooking for our services, want to book an appointment, or have a question? I\'m here to help!',
+    'مرحباً بك في مركز ريادة! 👋 أنا خديجة، مساعدتك الذكية.\n\nهل تبحث عن خدماتنا، تريد حجز موعد، أو لديك سؤال؟ أنا هنا للمساعدة!\n\n─────────────────\n\nWelcome to Riyada Center! 👋 I\'m Khadija, your AI assistant.\n\nLooking for our services, want to book an appointment, or have a question? I\'m here to help!',
   timestamp: new Date(),
 }
 
@@ -190,13 +190,13 @@ export default function ChatWidget() {
                 border:         '2px solid rgba(255,255,255,0.4)',
               }}
             >
-              ر
+              خ
             </div>
 
             {/* Title */}
             <div style={{ flex: 1 }}>
               <p style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem', margin: 0, lineHeight: 1.2 }}>
-                رايا · Raya
+                خديجة · Khadija
               </p>
               <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.72rem', margin: 0, marginTop: '0.15rem' }}>
                 مركز ريادة · Riyada Center
