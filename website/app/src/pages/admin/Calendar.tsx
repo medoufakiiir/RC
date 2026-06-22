@@ -4,11 +4,11 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
-import type { EventClickArg, DatesSetArg, DateSelectArg, DateClickArg } from '@fullcalendar/core';
+import type { EventClickArg, DatesSetArg, DateSelectArg } from '@fullcalendar/core';
 import {
   CalendarDays, ChevronLeft, ChevronRight, X, ExternalLink,
   Phone, Mail, Stethoscope, User, Clock, FileText, Link2, Unlink,
-  RefreshCw, CircleDot, Ban, Trash2, Plus, Lock, Unlock,
+  RefreshCw, CircleDot, Ban, Lock, Unlock,
 } from 'lucide-react';
 import { adminApi } from '../../services/adminApi';
 import type { CalendarEvent, CalendarStatus, BlockedSlot } from '../../services/adminApi';
@@ -86,7 +86,7 @@ export default function Calendar() {
   function handleDatesSet(arg: DatesSetArg) { setTitle(arg.view.title); }
 
   // Month view: click a day → go to that day's view
-  function handleDateClick(info: DateClickArg) {
+  function handleDateClick(info: { dateStr: string }) {
     if (view === 'dayGridMonth') {
       setView('timeGridDay');
       const api = calRef.current?.getApi();
