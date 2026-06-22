@@ -85,8 +85,14 @@ export const adminApi = {
   exportContacts: (source?: string) => `${BASE}/admin/contacts/export?source=${source || 'all'}&token=${getToken()}`,
 
   // Calendar
-  calendarBookings: (_start?: string, _end?: string) =>
+  calendarBookings: () =>
     req<CalendarEvent[]>('GET', '/admin/calendar/bookings'),
+  calendarBlocked: () =>
+    req<BlockedSlot[]>('GET', '/admin/calendar/blocked'),
+  calendarBlock: (date: string, time?: string, reason?: string) =>
+    req<BlockedSlot>('POST', '/admin/calendar/blocked', { date, time, reason }),
+  calendarUnblock: (id: string) =>
+    req('DELETE', `/admin/calendar/blocked/${id}`),
   calendarBookingsUrl: () => `${BASE}/admin/calendar/bookings?token=${getToken()}`,
   calendarStatus: () => req<CalendarStatus>('GET', '/admin/calendar/status'),
   calendarGoogleConnect: () => req<{ url: string }>('GET', '/admin/calendar/google/connect'),
@@ -205,6 +211,14 @@ export interface ContactsSummary {
   totalBookingLeads: number;
   totalMessageLeads: number;
   totalChatbotLeads: number;
+}
+
+export interface BlockedSlot {
+  id: string;
+  date: string;
+  time: string | null;
+  reason: string;
+  createdAt: string;
 }
 
 export interface CalendarEvent {
