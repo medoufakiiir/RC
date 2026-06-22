@@ -135,7 +135,7 @@ export default function Booking() {
   function validateForm(): boolean {
     const e: Record<string, string> = {};
     const nameRegex = /^[\p{L}\s'-]{2,50}$/u;
-    const phoneRegex = /^(\+966|05|5)\d{8}$/;
+    const phoneRegex = /^(\+9665\d{8}|05\d{8})$/;
 
     const childName = formData.childName.trim();
     const parentName = formData.parentName.trim();
