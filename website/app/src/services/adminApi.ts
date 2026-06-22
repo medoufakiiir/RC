@@ -84,6 +84,18 @@ export const adminApi = {
     req<ContactsList>('GET', `/admin/contacts?${new URLSearchParams(params as never).toString()}`),
   exportContacts: (source?: string) => `${BASE}/admin/contacts/export?source=${source || 'all'}&token=${getToken()}`,
 
+  // Calendar
+  calendarBookings: (start: string, end: string) =>
+    req<CalendarEvent[]>('GET', `/admin/calendar/bookings?start=${start}&end=${end}`),
+  calendarBookingsUrl: () => `${BASE}/admin/calendar/bookings?token=${getToken()}`,
+  calendarStatus: () => req<CalendarStatus>('GET', '/admin/calendar/status'),
+  calendarGoogleConnect: () => req<{ url: string }>('GET', '/admin/calendar/google/connect'),
+  calendarGoogleSync: () => req<{ synced: number }>('POST', '/admin/calendar/google/sync'),
+  calendarGoogleDisconnect: () => req('DELETE', '/admin/calendar/google/disconnect'),
+  calendarMsConnect: () => req<{ url: string }>('GET', '/admin/calendar/microsoft/connect'),
+  calendarMsSync: () => req<{ synced: number }>('POST', '/admin/calendar/microsoft/sync'),
+  calendarMsDisconnect: () => req('DELETE', '/admin/calendar/microsoft/disconnect'),
+
   // Permissions
   permissions: () => req<{ chatbot: boolean; analytics: boolean; contacts: boolean }>('GET', '/admin/settings/permissions'),
   chatbotPermissions: () => req<{ id: string; name: string; email: string; role: string; isActive: boolean; chatbotEnabled: boolean }[]>('GET', '/admin/settings/permissions/chatbot'),
@@ -111,9 +123,9 @@ export interface AdminUser { id: string; email: string; name: string; role: Role
 export interface ManagedUser { id: string; email: string; name: string; role: Role; isActive: boolean; mustChangePassword: boolean; createdAt: string }
 
 export const ROLE_NAV: Record<Role, string[]> = {
-  SUPER_ADMIN:  ['dashboard', 'bookings', 'messages', 'services', 'team', 'chatbot', 'analytics', 'contacts', 'users', 'settings'],
-  MANAGER:      ['dashboard', 'bookings', 'messages', 'chatbot', 'users', 'settings'],
-  RECEPTIONIST: ['dashboard', 'bookings', 'messages', 'settings'],
+  SUPER_ADMIN:  ['dashboard', 'calendar', 'bookings', 'messages', 'services', 'team', 'chatbot', 'analytics', 'contacts', 'users', 'settings'],
+  MANAGER:      ['dashboard', 'calendar', 'bookings', 'messages', 'chatbot', 'users', 'settings'],
+  RECEPTIONIST: ['dashboard', 'calendar', 'bookings', 'messages', 'settings'],
   MARKETING:    ['dashboard', 'bookings', 'messages', 'chatbot', 'analytics', 'contacts', 'settings'],
 };
 
@@ -193,4 +205,32 @@ export interface ContactsSummary {
   totalBookingLeads: number;
   totalMessageLeads: number;
   totalChatbotLeads: number;
+}
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  color: string;
+  extendedProps: {
+    bookingId: string;
+    ref: string;
+    parentName: string;
+    childName: string;
+    childAge: string;
+    phone: string;
+    email: string;
+    service: string;
+    status: string;
+    notes: string;
+    adminNotes: string;
+  };
+}
+
+export interface CalendarStatus {
+  connected: boolean;
+  provider: string | null;
+  lastSynced: string | null;
+  calendarId?: string;
 }

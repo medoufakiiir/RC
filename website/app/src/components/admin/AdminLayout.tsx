@@ -3,13 +3,14 @@ import { Outlet, NavLink, useNavigate, useLocation, Link, Navigate } from 'react
 import {
   LayoutDashboard, CalendarCheck, MessageSquare, Settings2,
   Users, Stethoscope, LogOut, Menu, X, ChevronRight, Bot, Bell, Shield,
-  BarChart3, Contact,
+  BarChart3, Contact, CalendarDays,
 } from 'lucide-react';
 import { adminApi, getStoredAdmin, ROLE_NAV } from '../../services/adminApi';
 import type { Role } from '../../services/adminApi';
 
 const ALL_NAV = [
   { to: '/admin/dashboard',  icon: LayoutDashboard, label: 'Dashboard',  key: 'dashboard'  },
+  { to: '/admin/calendar',   icon: CalendarDays,    label: 'Calendar',   key: 'calendar'   },
   { to: '/admin/bookings',   icon: CalendarCheck,   label: 'Bookings',   key: 'bookings'   },
   { to: '/admin/messages',   icon: MessageSquare,   label: 'Messages',   key: 'messages'   },
   { to: '/admin/services',   icon: Stethoscope,     label: 'Services',   key: 'services'   },

@@ -198,4 +198,53 @@
   }
 }
 
+/* ── FullCalendar Riyada dark theme overrides ── */
+.riyada-calendar {
+  --fc-border-color: rgba(255,255,255,0.08);
+  --fc-today-bg-color: rgba(51,85,238,0.08);
+  --fc-neutral-bg-color: transparent;
+  --fc-page-bg-color: transparent;
+  --fc-list-event-hover-bg-color: rgba(255,255,255,0.03);
+  --fc-now-indicator-color: #3355EE;
+}
+.riyada-calendar .fc {
+  font-family: 'Nunito', sans-serif;
+  color: rgba(255,255,255,0.7);
+}
+.riyada-calendar .fc-theme-standard td,
+.riyada-calendar .fc-theme-standard th,
+.riyada-calendar .fc-theme-standard .fc-scrollgrid {
+  border-color: rgba(255,255,255,0.06);
+}
+.riyada-calendar .fc-col-header-cell-cushion,
+.riyada-calendar .fc-daygrid-day-number,
+.riyada-calendar .fc-list-day-text,
+.riyada-calendar .fc-list-day-side-text {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.75rem;
+  text-decoration: none;
+}
+.riyada-calendar .fc-daygrid-day-number { padding: 4px 8px; }
+.riyada-calendar .fc-timegrid-slot-label-cushion { color: rgba(255,255,255,0.3); font-size: 0.7rem; }
+.riyada-calendar .fc-event {
+  border: none;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  padding: 1px 4px;
+  cursor: pointer;
+}
+.riyada-calendar .fc-event:hover { filter: brightness(1.2); }
+.riyada-calendar .fc-daygrid-event-dot { display: none; }
+.riyada-calendar .fc-button-primary {
+  background: #3355EE;
+  border-color: #3355EE;
+}
+.riyada-calendar .fc-button-primary:hover { background: #2244dd; }
+.riyada-calendar .fc-timegrid-now-indicator-line { border-color: #3355EE; }
+.riyada-calendar .fc-timegrid-now-indicator-arrow { border-top-color: #3355EE; }
+.riyada-calendar .fc-list-event-title a { color: rgba(255,255,255,0.8); text-decoration: none; }
+.riyada-calendar .fc-list-event-time { color: rgba(255,255,255,0.4); }
+.riyada-calendar .fc-day-today .fc-daygrid-day-number { color: #3355EE; font-weight: 700; }
+.riyada-calendar .fc-non-business { background: rgba(255,255,255,0.015); }
+
 

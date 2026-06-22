@@ -33,6 +33,7 @@ const TeamAdmin     = lazy(() => import('./pages/admin/TeamAdmin'));
 const UsersAdmin    = lazy(() => import('./pages/admin/UsersAdmin'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const ChatbotAdmin  = lazy(() => import('./pages/admin/Chatbot'));
+const CalendarPage  = lazy(() => import('./pages/admin/Calendar'));
 const AnalyticsPage = lazy(() => import('./pages/admin/Analytics'));
 const ContactsPage  = lazy(() => import('./pages/admin/Contacts'));
 const Unauthorized  = lazy(() => import('./pages/admin/Unauthorized'));
@@ -83,6 +84,7 @@ export default function App() {
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="unauthorized" element={<Unauthorized />} />
+            <Route path="calendar" element={<RoleGuard allowed={['calendar']}><CalendarPage /></RoleGuard>} />
             <Route path="bookings" element={<Bookings />} />
             <Route path="bookings/:id" element={<BookingDetail />} />
             <Route path="messages" element={<Messages />} />
