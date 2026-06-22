@@ -76,6 +76,9 @@ export const adminApi = {
   analytics: () => req<AnalyticsData>('GET', '/admin/analytics'),
   contactsSummary: () => req<ContactsSummary>('GET', '/admin/analytics/contacts-summary'),
 
+  // Exports
+  exportUrl: (type: string) => `${BASE}/admin/analytics/export/${type}?token=${getToken()}`,
+
   // Contacts
   contacts: (params?: ContactsParams) =>
     req<ContactsList>('GET', `/admin/contacts?${new URLSearchParams(params as never).toString()}`),
@@ -168,14 +171,18 @@ export interface AnalyticsData {
     totalMessages: number; unreadMessages: number; weekMessages: number; monthMessages: number;
     totalChatSessions: number; weekChatSessions: number; monthChatSessions: number;
     totalChatAppointments: number; pendingChatAppts: number;
+    totalVisitors: number; weekVisitors: number; monthVisitors: number; todayVisitors: number;
     conversionRate: number;
   };
   trends: {
     bookingsByWeek: { week: string; count: number }[];
     messagesByWeek: { week: string; count: number }[];
     chatSessionsByWeek: { week: string; count: number }[];
+    visitorsByWeek: { week: string; count: number }[];
   };
   topServices: { name: string; count: number }[];
+  topPages: { path: string; count: number }[];
+  deviceSplit: Record<string, number>;
   statusBreakdown: Record<string, number>;
   chatLanguages: Record<string, number>;
 }
