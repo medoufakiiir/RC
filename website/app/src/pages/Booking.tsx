@@ -92,20 +92,24 @@ export default function Booking() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
 
+    // Use local date parts to avoid UTC timezone shift
+    function localDateStr(d: Date) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
     // Start from the Sunday of the week that contains tomorrow
     const gridStart = new Date(tomorrow);
     gridStart.setDate(gridStart.getDate() - gridStart.getDay());
 
-    // Build 5 weeks (35 cells) to cover ~28 days ahead
-    const cells: ({ date: string; day: number; month: string; available: boolean; inRange: boolean } | null)[] = [];
+    const cells: { date: string; day: number; month: string; available: boolean; inRange: boolean }[] = [];
     for (let i = 0; i < 35; i++) {
       const d = new Date(gridStart);
       d.setDate(gridStart.getDate() + i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = localDateStr(d);
       const dow = d.getDay();
       const isDayOff = DAYS_OFF.includes(dow);
       const isPast = d < tomorrow;
-      const tooFar = i > 0 && d.getTime() > tomorrow.getTime() + 28 * 86400000;
+      const tooFar = d.getTime() > tomorrow.getTime() + 28 * 86400000;
       const isBlocked = blockedDates.has(dateStr);
       const inRange = !isPast && !tooFar;
 
