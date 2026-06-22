@@ -23,8 +23,8 @@ const allServices = [
   { id: 'ot', slug: 'occupational-therapy', title: 'Occupational Therapy', titleAR: 'العلاج الوظيفي', description: 'Motor skills and sensory integration', descriptionAR: 'المهارات الحركية والتكامل الحسي', icon: Hand, color: '#C8F5B5', mascot: '/assets/mascots/skill-builder.png' },
 ];
 
-// Working hours: Sun-Thu, 9 AM - 4 PM (last slot at 3:15 PM)
-const WORKING_DAYS = [0, 1, 2, 3, 4]; // Sun=0 ... Thu=4
+// Days off: Friday (5) and Saturday (6)
+const DAYS_OFF = [5, 6];
 const TIME_SLOTS = [
   '9:00 AM', '9:45 AM', '10:30 AM', '11:15 AM',
   '12:00 PM', '1:00 PM', '1:45 PM', '2:30 PM', '3:15 PM',
@@ -87,29 +87,37 @@ export default function Booking() {
       .catch(() => {});
   }, []);
 
-  const calendarDays = useMemo(() => {
-    const days: { date: string; day: number; weekday: string; month: string; available: boolean; isToday: boolean }[] = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const calendarGrid = useMemo(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
 
-    for (let i = 1; i <= 28; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      const dow = d.getDay();
+    // Start from the Sunday of the week that contains tomorrow
+    const gridStart = new Date(tomorrow);
+    gridStart.setDate(gridStart.getDate() - gridStart.getDay());
+
+    // Build 5 weeks (35 cells) to cover ~28 days ahead
+    const cells: ({ date: string; day: number; month: string; available: boolean; inRange: boolean } | null)[] = [];
+    for (let i = 0; i < 35; i++) {
+      const d = new Date(gridStart);
+      d.setDate(gridStart.getDate() + i);
       const dateStr = d.toISOString().split('T')[0];
-      const isWorkingDay = WORKING_DAYS.includes(dow);
+      const dow = d.getDay();
+      const isDayOff = DAYS_OFF.includes(dow);
+      const isPast = d < tomorrow;
+      const tooFar = i > 0 && d.getTime() > tomorrow.getTime() + 28 * 86400000;
       const isBlocked = blockedDates.has(dateStr);
+      const inRange = !isPast && !tooFar;
 
-      days.push({
+      cells.push({
         date: dateStr,
         day: d.getDate(),
         month: d.toLocaleString(locale, { month: 'short' }),
-        weekday: d.toLocaleString(locale, { weekday: 'short' }),
-        available: isWorkingDay && !isBlocked,
-        isToday: false,
+        available: inRange && !isDayOff && !isBlocked,
+        inRange,
       });
     }
-    return days;
+    return cells;
   }, [locale, blockedDates]);
 
   function isTimeAvailable(slot: string): boolean {
@@ -210,9 +218,7 @@ export default function Booking() {
     );
   }
 
-  // Pad calendar days to align with weekday grid
-  const firstDayDow = calendarDays.length > 0 ? new Date(calendarDays[0].date).getDay() : 0;
-  const paddedDays = [...Array(firstDayDow).fill(null), ...calendarDays];
+  // calendarGrid is already aligned to 7-column grid
 
   return (
     <div className="min-h-screen bg-bg-base">
@@ -301,24 +307,27 @@ export default function Booking() {
                   </h2>
                   <p className="text-text-secondary text-sm mb-2">{t('booking.selectDateDescription')}</p>
                   <p className="text-xs text-text-secondary/60 mb-4">
-                    {isRTL ? 'أيام العمل: الأحد – الخميس' : 'Working days: Sunday – Thursday'}
+                    {isRTL ? 'أيام العمل: الأحد – الخميس · الجمعة والسبت إجازة' : 'Working days: Sun – Thu · Fri & Sat off'}
                   </p>
                   <div className="grid grid-cols-7 gap-2">
-                    {weekdayHeaders.map((d) => (
-                      <div key={d} className="text-center text-xs font-medium text-text-secondary py-2">{d}</div>
+                    {weekdayHeaders.map((d, i) => (
+                      <div key={d} className={`text-center text-xs font-medium py-2 ${DAYS_OFF.includes(i) ? 'text-red-400/50' : 'text-text-secondary'}`}>{d}</div>
                     ))}
-                    {paddedDays.map((day, i) => {
-                      if (!day) return <div key={`pad-${i}`} />;
-                      const isSelected = selectedDate === day.date;
+                    {calendarGrid.map((cell, i) => {
+                      if (!cell) return <div key={`e-${i}`} />;
+                      const isSelected = selectedDate === cell.date;
+                      const isDayOff = DAYS_OFF.includes(new Date(cell.date).getDay());
                       return (
-                        <button key={day.date} onClick={() => day.available && setSelectedDate(day.date)} disabled={!day.available}
+                        <button key={cell.date} onClick={() => cell.available && setSelectedDate(cell.date)} disabled={!cell.available}
                           className={`aspect-square rounded-xl flex flex-col items-center justify-center text-xs transition-all duration-200 ${
                             isSelected ? 'bg-brand-blue text-white shadow-md'
-                            : !day.available ? 'bg-surface text-text-secondary/40 cursor-not-allowed'
+                            : isDayOff ? 'bg-red-500/5 text-red-400/30 cursor-not-allowed'
+                            : !cell.inRange ? 'bg-surface/50 text-text-secondary/20 cursor-not-allowed'
+                            : !cell.available ? 'bg-surface text-text-secondary/40 cursor-not-allowed'
                             : 'bg-surface text-text-primary hover:bg-brand-blue/10'
                           }`}>
-                          <span className="font-semibold">{day.day}</span>
-                          <span className="text-[9px] opacity-60">{day.month}</span>
+                          <span className="font-semibold">{cell.day}</span>
+                          <span className="text-[9px] opacity-60">{cell.month}</span>
                         </button>
                       );
                     })}
