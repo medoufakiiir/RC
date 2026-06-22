@@ -53,6 +53,7 @@ export default function Booking() {
   const [confirmed, setConfirmed] = useState(false);
   const [bookingRef, setBookingRef] = useState<string | null>(null);
   const [formData, setFormData] = useState({ childName: '', age: '', parentName: '', phone: '', notes: '' });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Availability from backend
   const [blockedDates, setBlockedDates] = useState<Set<string>>(new Set());
@@ -131,7 +132,35 @@ export default function Booking() {
     return true;
   }
 
+  function validateForm(): boolean {
+    const e: Record<string, string> = {};
+    const nameRegex = /^[\p{L}\s'-]{2,50}$/u;
+    const phoneRegex = /^(\+966|05|5)\d{8}$/;
+
+    const childName = formData.childName.trim();
+    const parentName = formData.parentName.trim();
+    const phone = formData.phone.replace(/[\s\-()]/g, '');
+    const age = parseInt(formData.age);
+
+    if (!childName || !nameRegex.test(childName)) {
+      e.childName = isRTL ? 'أدخل اسم الطفل الحقيقي (حروف فقط، حرفين على الأقل)' : 'Enter a real child name (letters only, at least 2 characters)';
+    }
+    if (!parentName || !nameRegex.test(parentName)) {
+      e.parentName = isRTL ? 'أدخل اسم ولي الأمر الحقيقي (حروف فقط)' : 'Enter a real parent name (letters only, at least 2 characters)';
+    }
+    if (!phone || !phoneRegex.test(phone)) {
+      e.phone = isRTL ? 'أدخل رقم هاتف سعودي صحيح (مثال: 05XXXXXXXX)' : 'Enter a valid Saudi phone number (e.g. 05XXXXXXXX or +966XXXXXXXXX)';
+    }
+    if (isNaN(age) || age < 1 || age > 18) {
+      e.age = isRTL ? 'أدخل عمر صحيح (١ - ١٨)' : 'Enter a valid age (1 - 18)';
+    }
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
   const handleNext = async () => {
+    if (step === 1 && !validateForm()) return;
     if (step === 4) {
       if (!selectedService || !selectedDate || !selectedTime) return;
       const serviceTitle = services.find((s) => s.id === selectedService)?.title ?? '';
@@ -281,24 +310,42 @@ export default function Booking() {
                   <p className="text-text-secondary text-sm mb-6">{t('booking.childDescription')}</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-1.5">{t('booking.childName')}</label>
-                      <input type="text" value={formData.childName} onChange={(e) => setFormData({ ...formData, childName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary" placeholder={t('booking.enterName')} />
+                      <label className="block text-sm font-medium text-text-primary mb-1.5">{t('booking.childName')} <span className="text-red-400">*</span></label>
+                      <input type="text" value={formData.childName}
+                        onChange={(e) => { setFormData({ ...formData, childName: e.target.value }); setErrors(prev => ({ ...prev, childName: '' })); }}
+                        className={`w-full px-4 py-3 rounded-xl border ${errors.childName ? 'border-red-400 ring-2 ring-red-400/20' : 'border-border'} focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary`}
+                        placeholder={t('booking.enterName')} maxLength={50} />
+                      {errors.childName && <p className="text-red-400 text-xs mt-1">{errors.childName}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-1.5">{t('booking.age')}</label>
-                      <input type="number" value={formData.age} onChange={(e) => setFormData({ ...formData, age: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary" placeholder={t('booking.years')} min="3" max="12" />
+                      <label className="block text-sm font-medium text-text-primary mb-1.5">{t('booking.age')} <span className="text-red-400">*</span></label>
+                      <input type="number" value={formData.age}
+                        onChange={(e) => { setFormData({ ...formData, age: e.target.value }); setErrors(prev => ({ ...prev, age: '' })); }}
+                        className={`w-full px-4 py-3 rounded-xl border ${errors.age ? 'border-red-400 ring-2 ring-red-400/20' : 'border-border'} focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary`}
+                        placeholder={t('booking.years')} min="1" max="18" />
+                      {errors.age && <p className="text-red-400 text-xs mt-1">{errors.age}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-1.5">{t('booking.parentName')}</label>
-                      <input type="text" value={formData.parentName} onChange={(e) => setFormData({ ...formData, parentName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary" placeholder={t('booking.yourName')} />
+                      <label className="block text-sm font-medium text-text-primary mb-1.5">{t('booking.parentName')} <span className="text-red-400">*</span></label>
+                      <input type="text" value={formData.parentName}
+                        onChange={(e) => { setFormData({ ...formData, parentName: e.target.value }); setErrors(prev => ({ ...prev, parentName: '' })); }}
+                        className={`w-full px-4 py-3 rounded-xl border ${errors.parentName ? 'border-red-400 ring-2 ring-red-400/20' : 'border-border'} focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary`}
+                        placeholder={t('booking.yourName')} maxLength={50} />
+                      {errors.parentName && <p className="text-red-400 text-xs mt-1">{errors.parentName}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-text-primary mb-1.5">{t('booking.phoneNumber')}</label>
-                      <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary" placeholder="+966 5X XXX XXXX" dir="ltr" />
+                      <label className="block text-sm font-medium text-text-primary mb-1.5">{t('booking.phoneNumber')} <span className="text-red-400">*</span></label>
+                      <input type="tel" value={formData.phone}
+                        onChange={(e) => { setFormData({ ...formData, phone: e.target.value }); setErrors(prev => ({ ...prev, phone: '' })); }}
+                        className={`w-full px-4 py-3 rounded-xl border ${errors.phone ? 'border-red-400 ring-2 ring-red-400/20' : 'border-border'} focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm bg-surface text-text-primary placeholder:text-text-secondary`}
+                        placeholder="05XXXXXXXX" dir="ltr" maxLength={15} />
+                      {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-text-primary mb-1.5">{t('booking.notes')}</label>
-                      <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm resize-none bg-surface text-text-primary placeholder:text-text-secondary" placeholder={t('booking.notesPlaceholder')} rows={3} />
+                      <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 outline-none transition-all text-sm resize-none bg-surface text-text-primary placeholder:text-text-secondary"
+                        placeholder={t('booking.notesPlaceholder')} rows={3} maxLength={500} />
                     </div>
                   </div>
                 </motion.div>
